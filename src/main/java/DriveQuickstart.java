@@ -10,6 +10,8 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
+import com.google.api.services.drive.model.Change;
+import com.google.api.services.drive.model.ChangeList;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 
@@ -74,5 +76,19 @@ public class DriveQuickstart {
                 System.out.printf("%s (%s)\n", file.getName(), file.getId());
             }
         }
+        Drive driveService = new Drive.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+                .setApplicationName(APPLICATION_NAME)
+                .build();
+        ChangeList changes = driveService.changes().list("3411")
+                .execute();
+        for (Change change : changes.getChanges()) {
+            // Process change
+            System.out.println("Change found for file: " + change.getFileId() );
+        }
+        /*if (changes.getNewStartPageToken() != null) {
+            // Last page, save this token for the next polling interval
+            savedStartPageToken = changes.getNewStartPageToken();
+        }
+        pageToken = changes.getNextPageToken();*/
     }
 }
