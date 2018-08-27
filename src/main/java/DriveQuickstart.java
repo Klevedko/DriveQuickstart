@@ -155,7 +155,6 @@ public class DriveQuickstart {
                 );
 
                 List<PermissionChange> evlist = event.getPermissionChanges();
-                // записываем в файл только то, где есть JSON !
                 if (!(evlist == null)) {
                     for (PermissionChange permissionChange : evlist) {
                         evlist_string = evlist_string + permissionChange;
@@ -193,12 +192,7 @@ public class DriveQuickstart {
                     clearAll();
                 }
             }
-
             Collections.sort(al);
-            System.out.println("================================================");
-            /*for (Employee product : al) {
-                System.out.println("Product: " + product.getTarget_name());
-            }*/
             write_to_file(al);
         }
     }
@@ -207,8 +201,7 @@ public class DriveQuickstart {
         final int n = geodata.length();
         for (int i = 0; i < n; ++i) {
             JSONObject person = geodata.getJSONObject(i);
-            //System.out.println(person.getString("name") + ":" + person.getString("role"));
-            his = person.getString("name") + ":" + person.getString("role") + "\n";
+            his = person.getString("name") + " : " + person.getString("role") + "\n";
         }
         return his;
     }
@@ -223,27 +216,25 @@ public class DriveQuickstart {
     public static void write_to_file(ArrayList<Employee> al) {
         try {
             HSSFWorkbook wb = new HSSFWorkbook();
-            String SheetName;
             Cell cell;
             Sheet list = wb.createSheet("SheetName");
             byte row = 0;
-            new java.io.File(System.getProperty("user.dir") + "\\Отчеты\\").mkdirs();
-            String output = System.getProperty("user.dir") + "\\Отчеты\\" + "ffff" + ".xls";
+            String output = "audit_results.xls";
 
             FileOutputStream fileout;
             fileout = new FileOutputStream(output);
 
             Row dataRow = list.createRow(row);
             cell = dataRow.createCell(0);
-            cell.setCellValue("Дата");
+            cell.setCellValue("Date");
             cell = dataRow.createCell(1);
-            cell.setCellValue("Инициатор");
+            cell.setCellValue("Who");
             cell = dataRow.createCell(2);
-            cell.setCellValue("Файл");
+            cell.setCellValue("File");
             cell = dataRow.createCell(3);
-            cell.setCellValue("Действие");
+            cell.setCellValue("Action");
             cell = dataRow.createCell(4);
-            cell.setCellValue("JSON");
+            cell.setCellValue("Activities");
             System.out.println("Recent activity:");
             row++;
 

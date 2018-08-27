@@ -17,6 +17,22 @@ version = '1.0'
 repositories {
     mavenCentral()
 }
+//create a single Jar with all dependencies
+task fatJar(type: Jar) {
+    manifest {
+        attributes 'Implementation-Title': 'Gradle Jar File Example',
+                'Implementation-Version': version,
+                'Main-Class': 'DriveQuickstart'
+    }
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
+//Get dependencies from Maven central repository
+repositories {
+    mavenCentral()
+}
 
 dependencies {
     compile 'com.google.api-client:google-api-client:1.23.0'
@@ -26,5 +42,6 @@ dependencies {
     compile 'com.google.apis:google-api-services-appsactivity:v1-rev136-1.23.0'
     compile 'org.apache.poi:poi:3.9'
     compile 'org.json:json:20160212'
+    compile group: 'net.java.dev.jna', name: 'jna-platform', version: '4.2.2'
 
 }
