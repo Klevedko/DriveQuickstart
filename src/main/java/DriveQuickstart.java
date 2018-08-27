@@ -7,7 +7,6 @@ import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.client.util.Lists;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.appsactivity.Appsactivity;
 import com.google.api.services.appsactivity.AppsactivityScopes;
@@ -17,6 +16,8 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -76,6 +77,13 @@ public class DriveQuickstart {
      * @return an authorized Credential object.
      * @throws IOException
      */
+    public static String history = "";
+    public static String historyAdd = "";
+    public static String historyDel = "";
+    public static String historyRem = "";
+    public static String his = "";
+    public static JSONArray geodata;
+
     public static Credential authorize() throws IOException {
         // Load client secrets.
         InputStream in =
@@ -112,20 +120,101 @@ public class DriveQuickstart {
     }
 
     public static void main(String[] args) throws IOException {
-        // Build a new authorized API client service.
         Appsactivity service = getAppsactivityService();
 
-        // Print the recent activity in your Google Drive.
         ListActivitiesResponse result = service.activities().list()
                 .setSource("drive.google.com")
                 .setDriveAncestorId("root")
-                .setPageSize(100)
+                .setPageSize(111)
                 .execute();
+
         List<Activity> activities = result.getActivities();
         if (activities == null || activities.size() == 0) {
             System.out.println("No activity.");
         } else {
+            ArrayList<Employee> al = new ArrayList<Employee>();
 
+            for (Activity activity : activities) {
+
+                Event event = activity.getCombinedEvent();
+                String date = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
+                        .format(new java.util.Date(event.getEventTimeMillis().longValue()));
+
+                User user = event.getUser();
+                Target target = event.getTarget();
+                if (user == null || target == null  /*|| !(event.getPrimaryEventType().equals("permissionChange"))*/) {
+                    continue;
+                }
+                System.out.printf("%s: %s. FILE: %s,  ACTION: %s. GETPERMISSIONCHANGES_JSON %s\n",
+                        date,
+                        user.getName(),
+                        target.getName(),
+                        event.getPrimaryEventType(),
+                        event.getPermissionChanges()
+                );
+
+                List<PermissionChange> evlist = event.getPermissionChanges();
+                // записываем в файл только то, где есть JSON !
+                if (!(evlist == null)) {
+
+                    if (event.getPrimaryEventType().equals("permissionChange") || event.getPrimaryEventType().equals("create")) {
+                        System.out.println(event.getPrimaryEventType());
+                        JSONObject obj = new JSONObject(evlist);
+                        try {
+                            geodata = obj.getJSONArray("addedPermissions");
+                            historyAdd = "addedPermissions:\n" + getHistory(geodata);
+
+                        } catch (Exception e) {
+                            System.out.println(e.getLocalizedMessage());
+                        }
+
+                        try {
+                            geodata = obj.getJSONArray("deletedPermissions");
+                            historyDel = "deletedPermissions:\n" + getHistory(geodata);
+                        } catch (Exception e) {
+                            System.out.println(e.getLocalizedMessage());
+                        }
+
+                        try {
+                            geodata = obj.getJSONArray("removedPermissions");
+                            historyRem = "removedPermissions:\n" + getHistory(geodata);
+                        } catch (Exception e) {
+                            System.out.println(e.getLocalizedMessage());
+                        }
+                    }
+                    history = historyAdd.concat(historyDel.concat(historyRem));
+                    al.add(new Employee(date, user.getName(), target.getName(), event.getPrimaryEventType(), history));
+                    clearAll();
+                }
+            }
+
+            Collections.sort(al);
+            System.out.println("================================================");
+            /*for (Employee product : al) {
+                System.out.println("Product: " + product.getTarget_name());
+            }*/
+            write_to_file(al);
+        }
+    }
+
+    public static String getHistory(JSONArray geodata) {
+        final int n = geodata.length();
+        for (int i = 0; i < n; ++i) {
+            JSONObject person = geodata.getJSONObject(i);
+            his = person.getString("name") + ":" + person.getString("role") + "\n";
+        }
+        return his;
+    }
+
+    public static void clearAll() {
+        history = "";
+        historyDel = "";
+        historyAdd = "";
+        historyRem = "";
+    }
+
+    public static void write_to_file(ArrayList<Employee> al) {
+        try {
             HSSFWorkbook wb = new HSSFWorkbook();
             String SheetName;
             Cell cell;
@@ -134,67 +223,42 @@ public class DriveQuickstart {
             new java.io.File(System.getProperty("user.dir") + "\\Отчеты\\").mkdirs();
             String output = System.getProperty("user.dir") + "\\Отчеты\\" + "ffff" + ".xls";
 
+            FileOutputStream fileout;
+            fileout = new FileOutputStream(output);
+
+            Row dataRow = list.createRow(row);
+            cell = dataRow.createCell(0);
+            cell.setCellValue("Дата");
+            cell = dataRow.createCell(1);
+            cell.setCellValue("Инициатор");
+            cell = dataRow.createCell(2);
+            cell.setCellValue("Файл");
+            cell = dataRow.createCell(3);
+            cell.setCellValue("Действие");
+            cell = dataRow.createCell(4);
+            cell.setCellValue("JSON");
             System.out.println("Recent activity:");
-            for (Activity activity : activities) {
+            row++;
 
-                Row dataRow = list.createRow(row);
-                Event event = activity.getCombinedEvent();
-                String date = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
-                        .format(new java.util.Date(event.getEventTimeMillis().longValue()));
-
-                User user = event.getUser();
-                Target target = event.getTarget();
-                if (user == null || target == null /*|| !user.getIsMe()*/) {
-                    continue;
-                }
-                String evlist_string = "";
-                List<PermissionChange> evlist = event.getPermissionChanges();
-                if (!(evlist == null))
-                    for (PermissionChange permissionChange : evlist) {
-                        evlist_string = evlist_string + permissionChange.getAddedPermissions();
-                    }
-                System.out.printf("%s: %s. FILE: %s,  ACTION: %s. GETPERMISSIONCHANGES_JSON %s\n",
-                        date,
-                        user.getName(),
-                        target.getName(),
-                        event.getPrimaryEventType(),
-                        event.getPermissionChanges()
-                );
+            for (Employee product : al) {
+                dataRow = list.createRow(row);
                 cell = dataRow.createCell(0);
-                cell.setCellValue(date);
+                cell.setCellValue(product.getDate());
                 cell = dataRow.createCell(1);
-                cell.setCellValue(user.getName());
+                cell.setCellValue(product.getName());
                 cell = dataRow.createCell(2);
-                cell.setCellValue(target.getName());
+                cell.setCellValue(product.getTarget_name());
                 cell = dataRow.createCell(3);
-                cell.setCellValue(event.getPrimaryEventType());
-
-
-                FileOutputStream fileout;
-                fileout = new FileOutputStream(output);
-                if (!(evlist == null))
-                    for (PermissionChange permissionChange : evlist) {
-                        evlist_string = evlist_string + permissionChange.getAddedPermissions();
-                    }
+                cell.setCellValue(product.getGet1());
                 cell = dataRow.createCell(4);
-                cell.setCellValue(evlist_string);
-                //evlist_string="";
-                wb.write(fileout);
-                fileout.close();
+                cell.setCellValue(product.getGet2());
                 row++;
             }
-           /* for (ListIterator<String> it = test_list.listIterator(); it.hasNext();) {
-                System.out.println(it.next().toString());
-            }*/
 
+            wb.write(fileout);
+            fileout.close();
+        } catch (Exception e) {
         }
-        Employee[] empArr = new Employee[4];
-        empArr[0] = new Employee(10, "Mikey", 25, 10000);
-        empArr[1] = new Employee(20, "Arun", 29, 20000);
-        empArr[2] = new Employee(5, "Lisa", 35, 5000);
-        empArr[3] = new Employee(1, "Pankaj", 32, 50000);
-        Arrays.sort(empArr);
-        System.out.println("Default Sorting of Employees list:\n"+Arrays.toString(empArr));
+
     }
 }
-

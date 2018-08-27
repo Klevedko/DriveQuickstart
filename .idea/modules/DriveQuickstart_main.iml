@@ -15,6 +15,7 @@
     <orderEntry type="library" name="Gradle: com.google.apis:google-api-services-admin-reports:reports_v1-rev46-1.20.0" level="project" />
     <orderEntry type="library" name="Gradle: com.google.apis:google-api-services-appsactivity:v1-rev136-1.23.0" level="project" />
     <orderEntry type="library" name="Gradle: org.apache.poi:poi:3.9" level="project" />
+    <orderEntry type="library" name="Gradle: org.json:json:20160212" level="project" />
     <orderEntry type="library" name="Gradle: com.google.oauth-client:google-oauth-client:1.23.0" level="project" />
     <orderEntry type="library" name="Gradle: com.google.http-client:google-http-client-jackson2:1.23.0" level="project" />
     <orderEntry type="library" name="Gradle: com.google.guava:guava-jdk5:17.0" level="project" />
