@@ -120,17 +120,18 @@ public class DriveQuickstart {
                 Event event = activity.getCombinedEvent();
                 User user = event.getUser();
                 Target target = event.getTarget();
-                if (user == null || target == null ) {
+                if (user == null || target == null /*|| !user.getIsMe()*/) {
                     continue;
                 }
                 String date = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
                         .format(new java.util.Date(event.getEventTimeMillis().longValue()));
-                System.out.printf("%s: %s, %s, %s, %s (%s)\n",
+                System.out.printf("%s: %s. File: %s,  Action: %s. JSONS %s\n",
                         date,
                         user.getName(),
+                        target.getName(),
                         event.getPrimaryEventType(),
-                        target.getName(), event.getPermissionChanges(),
-                        target.getMimeType());
+                        event.getPermissionChanges()
+                        );
             }
         }
     }
