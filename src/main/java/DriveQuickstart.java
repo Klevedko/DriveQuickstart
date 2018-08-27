@@ -12,41 +12,58 @@ import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.appsactivity.Appsactivity;
 import com.google.api.services.appsactivity.AppsactivityScopes;
 import com.google.api.services.appsactivity.model.*;
+import com.google.api.services.appsactivity.model.User;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
-import com.google.api.services.drive.model.Change;
-import com.google.api.services.drive.model.ChangeList;
-import com.google.api.services.drive.model.File;
-import com.google.api.services.drive.model.FileList;
+import com.google.api.services.drive.model.*;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
+import java.security.Permission;
+import java.sql.PreparedStatement;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EventListener;
 import java.util.List;
 
 public class DriveQuickstart {
-    /** Application name. */
+    /**
+     * Application name.
+     */
     private static final String APPLICATION_NAME =
             "G Suite Activity API Java Quickstart";
 
-    /** Directory to store authorization tokens for this application. */
+    /**
+     * Directory to store authorization tokens for this application.
+     */
     private static final java.io.File DATA_STORE_DIR = new java.io.File("tokens");
 
-    /** Global instance of the {@link FileDataStoreFactory}. */
+    /**
+     * Global instance of the {@link FileDataStoreFactory}.
+     */
     private static FileDataStoreFactory DATA_STORE_FACTORY;
 
-    /** Global instance of the JSON factory. */
+    /**
+     * Global instance of the JSON factory.
+     */
     private static final JsonFactory JSON_FACTORY =
             JacksonFactory.getDefaultInstance();
 
-    /** Global instance of the HTTP transport. */
+    /**
+     * Global instance of the HTTP transport.
+     */
     private static HttpTransport HTTP_TRANSPORT;
 
-    /** Global instance of the scopes required by this quickstart.
-     *
+    /**
+     * Global instance of the scopes required by this quickstart.
+     * <p>
      * If modifying these scopes, delete your previously saved credentials
      * at ~/.credentials/appsactivity-java-quickstart
      */
@@ -64,6 +81,7 @@ public class DriveQuickstart {
 
     /**
      * Creates an authorized Credential object.
+     *
      * @return an authorized Credential object.
      * @throws IOException
      */
@@ -90,6 +108,7 @@ public class DriveQuickstart {
 
     /**
      * Build and return an authorized Apps Activity client service.
+     *
      * @return an authorized Appsactivity client service
      * @throws IOException
      */
@@ -115,24 +134,62 @@ public class DriveQuickstart {
         if (activities == null || activities.size() == 0) {
             System.out.println("No activity.");
         } else {
+
+            HSSFWorkbook wb = new HSSFWorkbook();
+            String SheetName;
+            Cell cell;
+            Sheet list = wb.createSheet("SheetName");
+            byte row = 0;
+            new java.io.File(System.getProperty("user.dir") + "\\Отчеты\\").mkdirs();
+            String output = System.getProperty("user.dir") + "\\Отчеты\\" + "ffff" + ".xls";
             System.out.println("Recent activity:");
             for (Activity activity : activities) {
+                Row dataRow = list.createRow(row);
                 Event event = activity.getCombinedEvent();
+                String date = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
+                        .format(new java.util.Date(event.getEventTimeMillis().longValue()));
+
                 User user = event.getUser();
                 Target target = event.getTarget();
                 if (user == null || target == null /*|| !user.getIsMe()*/) {
                     continue;
                 }
-                String date = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
-                        .format(new java.util.Date(event.getEventTimeMillis().longValue()));
+
                 System.out.printf("%s: %s. File: %s,  Action: %s. JSONS %s\n",
                         date,
                         user.getName(),
                         target.getName(),
                         event.getPrimaryEventType(),
                         event.getPermissionChanges()
-                        );
+                );
+
+                cell = dataRow.createCell(0);
+                cell.setCellValue(date);
+                cell = dataRow.createCell(1);
+                cell.setCellValue(user.getName());
+                cell = dataRow.createCell(2);
+                cell.setCellValue(target.getName());
+                cell = dataRow.createCell(3);
+                cell.setCellValue(event.getPrimaryEventType());
+
+               /* List<PermissionChange> evlist = event.getPermissionChanges();
+                String evlist_string = "";
+                for (PermissionChange permissionChange : evlist) {
+                if (!permissionChange.isEmpty())
+                    evlist_string=evlist_string+permissionChange.toPrettyString();
+                }
+                cell = dataRow.createCell(4);
+                cell.setCellValue(evlist_string);
+                evlist_string="";*/
+
+                FileOutputStream fileout;
+                fileout = new FileOutputStream(output);
+
+                wb.write(fileout);
+                fileout.close();
+                row++;
             }
+
         }
     }
 }

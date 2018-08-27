@@ -24,4 +24,5 @@ dependencies {
     compile 'com.google.apis:google-api-services-drive:v3-rev110-1.23.0'
     compile 'com.google.apis:google-api-services-admin-reports:reports_v1-rev46-1.20.0'
     compile 'com.google.apis:google-api-services-appsactivity:v1-rev136-1.23.0'
+    compile 'org.apache.poi:poi:3.9'
 }
