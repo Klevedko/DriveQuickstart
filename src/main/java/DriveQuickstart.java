@@ -5,17 +5,14 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpTransport;
-import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.util.Lists;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.appsactivity.Appsactivity;
 import com.google.api.services.appsactivity.AppsactivityScopes;
 import com.google.api.services.appsactivity.model.*;
 import com.google.api.services.appsactivity.model.User;
-import com.google.api.services.drive.Drive;
-import com.google.api.services.drive.DriveScopes;
-import com.google.api.services.drive.model.*;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -25,13 +22,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.security.GeneralSecurityException;
-import java.security.Permission;
-import java.sql.PreparedStatement;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EventListener;
-import java.util.List;
+import java.util.*;
 
 public class DriveQuickstart {
     /**
@@ -142,8 +133,10 @@ public class DriveQuickstart {
             byte row = 0;
             new java.io.File(System.getProperty("user.dir") + "\\Отчеты\\").mkdirs();
             String output = System.getProperty("user.dir") + "\\Отчеты\\" + "ffff" + ".xls";
+
             System.out.println("Recent activity:");
             for (Activity activity : activities) {
+
                 Row dataRow = list.createRow(row);
                 Event event = activity.getCombinedEvent();
                 String date = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
@@ -154,15 +147,19 @@ public class DriveQuickstart {
                 if (user == null || target == null /*|| !user.getIsMe()*/) {
                     continue;
                 }
-
-                System.out.printf("%s: %s. File: %s,  Action: %s. JSONS %s\n",
+                String evlist_string = "";
+                List<PermissionChange> evlist = event.getPermissionChanges();
+                if (!(evlist == null))
+                    for (PermissionChange permissionChange : evlist) {
+                        evlist_string = evlist_string + permissionChange.getAddedPermissions();
+                    }
+                System.out.printf("%s: %s. FILE: %s,  ACTION: %s. GETPERMISSIONCHANGES_JSON %s\n",
                         date,
                         user.getName(),
                         target.getName(),
                         event.getPrimaryEventType(),
                         event.getPermissionChanges()
                 );
-
                 cell = dataRow.createCell(0);
                 cell.setCellValue(date);
                 cell = dataRow.createCell(1);
@@ -172,24 +169,32 @@ public class DriveQuickstart {
                 cell = dataRow.createCell(3);
                 cell.setCellValue(event.getPrimaryEventType());
 
-               /* List<PermissionChange> evlist = event.getPermissionChanges();
-                String evlist_string = "";
-                for (PermissionChange permissionChange : evlist) {
-                if (!permissionChange.isEmpty())
-                    evlist_string=evlist_string+permissionChange.toPrettyString();
-                }
-                cell = dataRow.createCell(4);
-                cell.setCellValue(evlist_string);
-                evlist_string="";*/
 
                 FileOutputStream fileout;
                 fileout = new FileOutputStream(output);
-
+                if (!(evlist == null))
+                    for (PermissionChange permissionChange : evlist) {
+                        evlist_string = evlist_string + permissionChange.getAddedPermissions();
+                    }
+                cell = dataRow.createCell(4);
+                cell.setCellValue(evlist_string);
+                //evlist_string="";
                 wb.write(fileout);
                 fileout.close();
                 row++;
             }
+           /* for (ListIterator<String> it = test_list.listIterator(); it.hasNext();) {
+                System.out.println(it.next().toString());
+            }*/
 
         }
+        Employee[] empArr = new Employee[4];
+        empArr[0] = new Employee(10, "Mikey", 25, 10000);
+        empArr[1] = new Employee(20, "Arun", 29, 20000);
+        empArr[2] = new Employee(5, "Lisa", 35, 5000);
+        empArr[3] = new Employee(1, "Pankaj", 32, 50000);
+        Arrays.sort(empArr);
+        System.out.println("Default Sorting of Employees list:\n"+Arrays.toString(empArr));
     }
 }
+
