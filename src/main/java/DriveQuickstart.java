@@ -145,6 +145,7 @@ public class DriveQuickstart {
                 if (user == null || target == null  /*|| !(event.getPrimaryEventType().equals("permissionChange"))*/) {
                     continue;
                 }
+                String evlist_string = "";
                 System.out.printf("%s: %s. FILE: %s,  ACTION: %s. GETPERMISSIONCHANGES_JSON %s\n",
                         date,
                         user.getName(),
@@ -156,12 +157,15 @@ public class DriveQuickstart {
                 List<PermissionChange> evlist = event.getPermissionChanges();
                 // записываем в файл только то, где есть JSON !
                 if (!(evlist == null)) {
-
+                    for (PermissionChange permissionChange : evlist) {
+                        evlist_string = evlist_string + permissionChange;
+                    }
                     if (event.getPrimaryEventType().equals("permissionChange") || event.getPrimaryEventType().equals("create")) {
                         System.out.println(event.getPrimaryEventType());
-                        JSONObject obj = new JSONObject(evlist);
+                        JSONObject obj = new JSONObject(evlist_string);
                         try {
                             geodata = obj.getJSONArray("addedPermissions");
+                            System.out.println("add" + geodata);
                             historyAdd = "addedPermissions:\n" + getHistory(geodata);
 
                         } catch (Exception e) {
@@ -170,6 +174,7 @@ public class DriveQuickstart {
 
                         try {
                             geodata = obj.getJSONArray("deletedPermissions");
+                            System.out.println("del" + geodata);
                             historyDel = "deletedPermissions:\n" + getHistory(geodata);
                         } catch (Exception e) {
                             System.out.println(e.getLocalizedMessage());
@@ -178,6 +183,7 @@ public class DriveQuickstart {
                         try {
                             geodata = obj.getJSONArray("removedPermissions");
                             historyRem = "removedPermissions:\n" + getHistory(geodata);
+                            System.out.println("rem" + geodata);
                         } catch (Exception e) {
                             System.out.println(e.getLocalizedMessage());
                         }
@@ -201,6 +207,7 @@ public class DriveQuickstart {
         final int n = geodata.length();
         for (int i = 0; i < n; ++i) {
             JSONObject person = geodata.getJSONObject(i);
+            //System.out.println(person.getString("name") + ":" + person.getString("role"));
             his = person.getString("name") + ":" + person.getString("role") + "\n";
         }
         return his;
