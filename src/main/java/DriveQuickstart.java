@@ -4,10 +4,14 @@ import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
+import com.google.api.services.appsactivity.Appsactivity;
+import com.google.api.services.appsactivity.AppsactivityScopes;
+import com.google.api.services.appsactivity.model.*;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.Change;
@@ -19,76 +23,115 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 public class DriveQuickstart {
-    private static final String APPLICATION_NAME = "Google Drive API Java Quickstart";
-    private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
-    private static final String TOKENS_DIRECTORY_PATH = "tokens";
+    /** Application name. */
+    private static final String APPLICATION_NAME =
+            "G Suite Activity API Java Quickstart";
 
-    /**
-     * Global instance of the scopes required by this quickstart.
-     * If modifying these scopes, delete your previously saved credentials/ folder.
+    /** Directory to store authorization tokens for this application. */
+    private static final java.io.File DATA_STORE_DIR = new java.io.File("tokens");
+
+    /** Global instance of the {@link FileDataStoreFactory}. */
+    private static FileDataStoreFactory DATA_STORE_FACTORY;
+
+    /** Global instance of the JSON factory. */
+    private static final JsonFactory JSON_FACTORY =
+            JacksonFactory.getDefaultInstance();
+
+    /** Global instance of the HTTP transport. */
+    private static HttpTransport HTTP_TRANSPORT;
+
+    /** Global instance of the scopes required by this quickstart.
+     *
+     * If modifying these scopes, delete your previously saved credentials
+     * at ~/.credentials/appsactivity-java-quickstart
      */
-    private static final List<String> SCOPES = Collections.singletonList(DriveScopes.DRIVE_METADATA_READONLY);
-    private static final String CREDENTIALS_FILE_PATH = "C:/IdeaProjects/DriveQuickstart/src/main/resources/credentials.json";
+    private static final List<String> SCOPES = Arrays.asList(AppsactivityScopes.ACTIVITY);
+
+    static {
+        try {
+            HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+            DATA_STORE_FACTORY = new FileDataStoreFactory(DATA_STORE_DIR);
+        } catch (Throwable t) {
+            t.printStackTrace();
+            System.exit(1);
+        }
+    }
 
     /**
      * Creates an authorized Credential object.
-     * @param HTTP_TRANSPORT The network HTTP Transport.
-     * @return An authorized Credential object.
-     * @throws IOException If the credentials.json file cannot be found.
+     * @return an authorized Credential object.
+     * @throws IOException
      */
-    private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
+    public static Credential authorize() throws IOException {
         // Load client secrets.
-        InputStream in = DriveQuickstart.class.getResourceAsStream("credentials.json");
-        GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
+        InputStream in =
+                DriveQuickstart.class.getResourceAsStream("/credentials.json");
+        GoogleClientSecrets clientSecrets =
+                GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 
         // Build flow and trigger user authorization request.
-        GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
-                HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
-                .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
-                .setAccessType("offline")
-                .build();
-        return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("user");
+        GoogleAuthorizationCodeFlow flow =
+                new GoogleAuthorizationCodeFlow.Builder(
+                        HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
+                        .setDataStoreFactory(DATA_STORE_FACTORY)
+                        .setAccessType("offline")
+                        .build();
+        Credential credential = new AuthorizationCodeInstalledApp(
+                flow, new LocalServerReceiver()).authorize("user");
+        System.out.println(
+                "Credentials saved to " + DATA_STORE_DIR.getAbsolutePath());
+        return credential;
     }
 
-    public static void main(String... args) throws IOException, GeneralSecurityException {
-        // Build a new authorized API client service.
-        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-        System.out.println();
-        Drive service = new Drive.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+    /**
+     * Build and return an authorized Apps Activity client service.
+     * @return an authorized Appsactivity client service
+     * @throws IOException
+     */
+    public static Appsactivity getAppsactivityService() throws IOException {
+        Credential credential = authorize();
+        return new Appsactivity.Builder(
+                HTTP_TRANSPORT, JSON_FACTORY, credential)
                 .setApplicationName(APPLICATION_NAME)
                 .build();
+    }
 
-        // Print the names and IDs for up to 10 files.
-        FileList result = service.files().list()
-                .setPageSize(10)
-                .setFields("nextPageToken, files(id, name)")
+    public static void main(String[] args) throws IOException {
+        // Build a new authorized API client service.
+        Appsactivity service = getAppsactivityService();
+
+        // Print the recent activity in your Google Drive.
+        ListActivitiesResponse result = service.activities().list()
+                .setSource("drive.google.com")
+                .setDriveAncestorId("root")
+                .setPageSize(100)
                 .execute();
-        List<File> files = result.getFiles();
-        if (files == null || files.isEmpty()) {
-            System.out.println("No files found.");
+        List<Activity> activities = result.getActivities();
+        if (activities == null || activities.size() == 0) {
+            System.out.println("No activity.");
         } else {
-            System.out.println("Files:");
-            for (File file : files) {
-                System.out.printf("%s (%s)\n", file.getName(), file.getId());
+            System.out.println("Recent activity:");
+            for (Activity activity : activities) {
+                Event event = activity.getCombinedEvent();
+                User user = event.getUser();
+                Target target = event.getTarget();
+                if (user == null || target == null ) {
+                    continue;
+                }
+                String date = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
+                        .format(new java.util.Date(event.getEventTimeMillis().longValue()));
+                System.out.printf("%s: %s, %s, %s, %s (%s)\n",
+                        date,
+                        user.getName(),
+                        event.getPrimaryEventType(),
+                        target.getName(), event.getPermissionChanges(),
+                        target.getMimeType());
             }
         }
-        Drive driveService = new Drive.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
-                .setApplicationName(APPLICATION_NAME)
-                .build();
-        ChangeList changes = driveService.changes().list("3411")
-                .execute();
-        for (Change change : changes.getChanges()) {
-            // Process change
-            System.out.println("Change found for file: " + change.getFileId() );
-        }
-        /*if (changes.getNewStartPageToken() != null) {
-            // Last page, save this token for the next polling interval
-            savedStartPageToken = changes.getNewStartPageToken();
-        }
-        pageToken = changes.getNextPageToken();*/
     }
 }
