@@ -124,7 +124,7 @@ public class DriveQuickstart {
 
         ListActivitiesResponse result = service.activities().list()
                 .setSource("drive.google.com")
-                .setDriveAncestorId("root")
+                .setDriveAncestorId("1hFVqvIGHinC-cbu5_Cbt_DKxWdNtweRv")
                 .setPageSize(111)
                 .execute();
 
@@ -133,6 +133,7 @@ public class DriveQuickstart {
             System.out.println("No activity.");
         } else {
             ArrayList<Employee> al = new ArrayList<Employee>();
+            System.out.println("Recent activity:");
 
             for (Activity activity : activities) {
 
@@ -142,7 +143,7 @@ public class DriveQuickstart {
 
                 User user = event.getUser();
                 Target target = event.getTarget();
-                if (user == null || target == null  /*|| !(event.getPrimaryEventType().equals("permissionChange"))*/) {
+                if (user == null || target == null ) {
                     continue;
                 }
                 String evlist_string = "";
@@ -164,27 +165,27 @@ public class DriveQuickstart {
                         JSONObject obj = new JSONObject(evlist_string);
                         try {
                             geodata = obj.getJSONArray("addedPermissions");
-                            System.out.println("add" + geodata);
+                            //System.out.println("add" + geodata);
                             historyAdd = "addedPermissions:\n" + getHistory(geodata);
 
                         } catch (Exception e) {
-                            System.out.println(e.getLocalizedMessage());
+                            //System.out.println(e.getLocalizedMessage());
                         }
 
                         try {
                             geodata = obj.getJSONArray("deletedPermissions");
-                            System.out.println("del" + geodata);
+                            //System.out.println("del" + geodata);
                             historyDel = "deletedPermissions:\n" + getHistory(geodata);
                         } catch (Exception e) {
-                            System.out.println(e.getLocalizedMessage());
+                            //System.out.println(e.getLocalizedMessage());
                         }
 
                         try {
                             geodata = obj.getJSONArray("removedPermissions");
                             historyRem = "removedPermissions:\n" + getHistory(geodata);
-                            System.out.println("rem" + geodata);
+                            //System.out.println("rem" + geodata);
                         } catch (Exception e) {
-                            System.out.println(e.getLocalizedMessage());
+                            //System.out.println(e.getLocalizedMessage());
                         }
                     }
                     history = historyAdd.concat(historyDel.concat(historyRem));
@@ -235,7 +236,6 @@ public class DriveQuickstart {
             cell.setCellValue("Action");
             cell = dataRow.createCell(4);
             cell.setCellValue("Activities");
-            System.out.println("Recent activity:");
             row++;
 
             for (Employee product : al) {
