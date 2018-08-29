@@ -81,7 +81,6 @@ public class DriveQuickstart {
     public static String historyAdd = "";
     public static String historyDel = "";
     public static String historyRem = "";
-    public static String his = "";
     public static JSONArray geodata;
 
     public static Credential authorize() throws IOException {
@@ -121,31 +120,35 @@ public class DriveQuickstart {
 
     public static void main(String[] args) throws IOException {
         Appsactivity service = getAppsactivityService();
-
+// папка для мониторинга
         ListActivitiesResponse result = service.activities().list()
                 .setSource("drive.google.com")
-                .setDriveAncestorId("1hFVqvIGHinC-cbu5_Cbt_DKxWdNtweRv")
+                .setDriveAncestorId("root")
                 .setPageSize(111)
                 .execute();
 
         List<Activity> activities = result.getActivities();
         if (activities == null || activities.size() == 0) {
             System.out.println("No activity.");
-        } else {
+        } else
+            read_activities(activities);
+    }
+
+    public static void read_activities(List<Activity> activities) {
+        {
             ArrayList<Employee> al = new ArrayList<Employee>();
             System.out.println("Recent activity:");
 
             for (Activity activity : activities) {
-
                 Event event = activity.getCombinedEvent();
-                String date = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
-                        .format(new java.util.Date(event.getEventTimeMillis().longValue()));
-
                 User user = event.getUser();
                 Target target = event.getTarget();
-                if (user == null || target == null ) {
+                String date = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(new java.util.Date(event.getEventTimeMillis().longValue()));
+
+                if (user == null || target == null) {
                     continue;
                 }
+
                 String evlist_string = "";
                 System.out.printf("%s: %s. FILE: %s,  ACTION: %s. GETPERMISSIONCHANGES_JSON %s\n",
                         date,
@@ -160,8 +163,13 @@ public class DriveQuickstart {
                     for (PermissionChange permissionChange : evlist) {
                         evlist_string = evlist_string + permissionChange;
                     }
-                    if (event.getPrimaryEventType().equals("permissionChange") || event.getPrimaryEventType().equals("create")) {
-                        System.out.println(event.getPrimaryEventType());
+                    if (event.getPrimaryEventType().equals("permissionChange")
+                            || event.getPrimaryEventType().equals("create")
+                            || event.getPrimaryEventType().equals("upload")
+                            || event.getPrimaryEventType().equals("move")
+                            ) {
+                        //if(event.getPrimaryEventType().equals("upload")){
+                        //if(date.equals("2018-08-28T14:15:36+0300")){
                         JSONObject obj = new JSONObject(evlist_string);
                         try {
                             geodata = obj.getJSONArray("addedPermissions");
@@ -189,8 +197,10 @@ public class DriveQuickstart {
                         }
                     }
                     history = historyAdd.concat(historyDel.concat(historyRem));
+                    System.out.println(history);
                     al.add(new Employee(date, user.getName(), target.getName(), event.getPrimaryEventType(), history));
                     clearAll();
+                    //}
                 }
             }
             Collections.sort(al);
@@ -200,9 +210,16 @@ public class DriveQuickstart {
 
     public static String getHistory(JSONArray geodata) {
         final int n = geodata.length();
+        String his = "";
         for (int i = 0; i < n; ++i) {
             JSONObject person = geodata.getJSONObject(i);
-            his = person.getString("name") + " : " + person.getString("role") + "\n";
+            if(person.has("name")) {
+                his += "   " + person.getString("name") + ": " + person.getString("role") + "\n";
+            }
+            else
+            {
+                his += "   " + person.getString("permissionId") + ": " + person.getString("role") + "\n";
+            }
         }
         return his;
     }
@@ -247,9 +264,9 @@ public class DriveQuickstart {
                 cell = dataRow.createCell(2);
                 cell.setCellValue(product.getTarget_name());
                 cell = dataRow.createCell(3);
-                cell.setCellValue(product.getGet1());
+                cell.setCellValue(product.getGetPrimaryEventType());
                 cell = dataRow.createCell(4);
-                cell.setCellValue(product.getGet2());
+                cell.setCellValue(product.getHistory());
                 row++;
             }
 

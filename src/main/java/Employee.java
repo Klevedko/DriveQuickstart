@@ -1,20 +1,19 @@
 import java.io.Serializable;
-import java.sql.Date;
 
 public class Employee implements Serializable, Comparable<Employee> {
 
     private String date;
     private String name;
     private String target_name;
-    private String get1;
-    private String get2;
+    private String getPrimaryEventType;
+    private String history;
 
-    public Employee(String date, String name, String target_name, String get1, String get2) {
+    public Employee(String date, String name, String target_name, String getPrimaryEventType, String history) {
         this.date = date;
         this.name = name;
         this.target_name = target_name;
-        this.get1 = get1;
-        this.get2 = get2;
+        this.getPrimaryEventType = getPrimaryEventType;
+        this.history = history;
     }
 
     public String getDate() {
@@ -41,20 +40,20 @@ public class Employee implements Serializable, Comparable<Employee> {
         this.target_name = target_name;
     }
 
-    public String getGet1() {
-        return get1;
+    public String getGetPrimaryEventType() {
+        return getPrimaryEventType;
     }
 
-    public void setGet1(String get1) {
-        this.get1 = get1;
+    public void setGetPrimaryEventType(String getPrimaryEventType) {
+        this.getPrimaryEventType = getPrimaryEventType;
     }
 
-    public String getGet2() {
-        return get2;
+    public String getHistory() {
+        return history;
     }
 
-    public void setGet2(String get2) {
-        this.get2 = get2;
+    public void setHistory(String history) {
+        this.history = history;
     }
 
     @Override
@@ -70,8 +69,8 @@ public class Employee implements Serializable, Comparable<Employee> {
     @Override
     //this is required to print the user friendly information about the Employee
     public String toString() {
-        return "[date=" + this.date + ", name=" + this.name + ", target_name=" + this.target_name + ", get1=" +
-                this.get1 + ", get2=" + this.get2 +"]";
+        return "[date=" + this.date + ", name=" + this.name + ", target_name=" + this.target_name + ", getPrimaryEventType=" +
+                this.getPrimaryEventType + ", history=" + this.history +"]";
     }
 
 }
