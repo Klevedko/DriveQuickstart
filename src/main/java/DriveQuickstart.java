@@ -169,7 +169,6 @@ public class DriveQuickstart {
                             || event.getPrimaryEventType().equals("move")
                             ) {
                         //if(event.getPrimaryEventType().equals("upload")){
-                        //if(date.equals("2018-08-28T14:15:36+0300")){
                         JSONObject obj = new JSONObject(evlist_string);
                         try {
                             geodata = obj.getJSONArray("addedPermissions");
@@ -200,7 +199,6 @@ public class DriveQuickstart {
                     System.out.println(history);
                     al.add(new Employee(date, user.getName(), target.getName(), event.getPrimaryEventType(), history));
                     clearAll();
-                    //}
                 }
             }
             Collections.sort(al);
@@ -213,13 +211,7 @@ public class DriveQuickstart {
         String his = "";
         for (int i = 0; i < n; ++i) {
             JSONObject person = geodata.getJSONObject(i);
-            if(person.has("name")) {
-                his += "   " + person.getString("name") + ": " + person.getString("role") + "\n";
-            }
-            else
-            {
-                his += "   " + person.getString("permissionId") + ": " + person.getString("role") + "\n";
-            }
+                his += "   " + (person.has("name") ? person.getString("name"):person.getString("permissionId")) + ": " + person.getString("role") + "\n";
         }
         return his;
     }
