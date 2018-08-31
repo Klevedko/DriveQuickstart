@@ -5,6 +5,7 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpTransport;
+import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
@@ -12,6 +13,10 @@ import com.google.api.services.appsactivity.Appsactivity;
 import com.google.api.services.appsactivity.AppsactivityScopes;
 import com.google.api.services.appsactivity.model.*;
 import com.google.api.services.appsactivity.model.User;
+import com.google.api.services.drive.Drive;
+import com.google.api.services.drive.model.File;
+import com.google.api.services.drive.model.FileList;
+import com.google.api.services.drive.model.PermissionList;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -23,6 +28,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.security.GeneralSecurityException;
 import java.util.*;
 
 public class api_v1 {
@@ -52,6 +58,7 @@ public class api_v1 {
      * Global instance of the HTTP transport.
      */
     private static HttpTransport HTTP_TRANSPORT;
+    private static NetHttpTransport NETHTTP_TRANSPORT;
 
     /**
      * Global instance of the scopes required by this quickstart.
@@ -64,6 +71,7 @@ public class api_v1 {
     static {
         try {
             HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+            NETHTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
             DATA_STORE_FACTORY = new FileDataStoreFactory(DATA_STORE_DIR);
         } catch (Throwable t) {
             t.printStackTrace();
@@ -82,6 +90,7 @@ public class api_v1 {
     public static String historyDel = "";
     public static String historyRem = "";
     public static JSONArray geodata;
+    private static final String TOKENS_DIRECTORY_PATH = "tokensMaster";
 
     public static Credential authorize() throws IOException {
         // Load client secrets.
@@ -104,6 +113,21 @@ public class api_v1 {
         return credential;
     }
 
+    private static Credential getCredentials() throws IOException {
+        // Load client secrets.
+        InputStream in = api_v1.class.getResourceAsStream("credentialsMaster.json");
+        GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
+
+        // Build flow and trigger user authorization request.
+        GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
+                HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
+                .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
+                .setAccessType("offline")
+                .build();
+        return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("akrasilnikov@i-novus.ru");
+    }
+
+
     /**
      * Build and return an authorized Apps Activity client service.
      *
@@ -111,14 +135,22 @@ public class api_v1 {
      * @throws IOException
      */
     public static Appsactivity getAppsactivityService() throws IOException {
-        Credential credential = authorize();
+        Credential active_credential = authorize();
         return new Appsactivity.Builder(
-                HTTP_TRANSPORT, JSON_FACTORY, credential)
+                HTTP_TRANSPORT, JSON_FACTORY, active_credential)
                 .setApplicationName(APPLICATION_NAME)
                 .build();
     }
 
-    public static void main(String[] args) throws IOException {
+    public static Drive getDriveService() throws IOException {
+        Credential drive_credential = getCredentials();
+        return new Drive.Builder(
+                NETHTTP_TRANSPORT, JSON_FACTORY, drive_credential)
+                .setApplicationName(APPLICATION_NAME)
+                .build();
+    }
+
+    public static void main(String[] args) throws IOException, GeneralSecurityException {
         Appsactivity service = getAppsactivityService();
 // папка для мониторинга
         ListActivitiesResponse result = service.activities().list()
@@ -132,6 +164,32 @@ public class api_v1 {
             System.out.println("No activity.");
         } else
             read_activities(activities);
+
+        Drive driveservice = getDriveService();
+        FileList drive_result = driveservice.files().list()
+                //.setPageSize(10)
+                .setFields("nextPageToken, files(id, name, owners, permissions)")
+                .execute();
+        List<File> files = drive_result.getFiles();
+        if (files == null || files.isEmpty()) {
+            System.out.println("No files found.");
+        } else {
+            System.out.println("Files:");
+            for (File file : files) {
+                System.out.printf("%s (%s)\n", file.getName(), file.getId());
+                    //List<com.google.api.services.drive.model.User> l = file.getOwners();
+                PermissionList permissionList = driveservice.permissions().list(file.getId())//.setPageToken("nextPageToken")
+                        .execute();
+                        List<com.google.api.services.drive.model.Permission> p = permissionList.getPermissions();
+                    /*for( com.google.api.services.drive.model.User user : l){
+                        System.out.println(user.getEmailAddress());*/
+                        for ( com.google.api.services.drive.model.Permission pe : p){
+                            System.out.println(pe.getEmailAddress());
+                        }
+                    /*}*/
+            }
+        }
+
     }
 
     public static void read_activities(List<Activity> activities) {
@@ -148,15 +206,9 @@ public class api_v1 {
                 if (user == null || target == null) {
                     continue;
                 }
-
                 String evlist_string = "";
                 System.out.printf("%s: %s. FILE: %s,  ACTION: %s. GETPERMISSIONCHANGES_JSON %s\n",
-                        date,
-                        user.getName(),
-                        target.getName(),
-                        event.getPrimaryEventType(),
-                        event.getPermissionChanges()
-                );
+                        date,user.getName(),target.getName(),event.getPrimaryEventType(),event.getPermissionChanges());
 
                 List<PermissionChange> evlist = event.getPermissionChanges();
                 if (!(evlist == null)) {
@@ -174,25 +226,19 @@ public class api_v1 {
                             geodata = obj.getJSONArray("addedPermissions");
                             //System.out.println("add" + geodata);
                             historyAdd = "addedPermissions:\n" + getHistory(geodata);
-
                         } catch (Exception e) {
-                            //System.out.println(e.getLocalizedMessage());
                         }
-
                         try {
                             geodata = obj.getJSONArray("deletedPermissions");
                             //System.out.println("del" + geodata);
                             historyDel = "deletedPermissions:\n" + getHistory(geodata);
                         } catch (Exception e) {
-                            //System.out.println(e.getLocalizedMessage());
                         }
-
                         try {
                             geodata = obj.getJSONArray("removedPermissions");
                             historyRem = "removedPermissions:\n" + getHistory(geodata);
                             //System.out.println("rem" + geodata);
                         } catch (Exception e) {
-                            //System.out.println(e.getLocalizedMessage());
                         }
                     }
                     history = historyAdd.concat(historyDel.concat(historyRem));
@@ -207,11 +253,10 @@ public class api_v1 {
     }
 
     public static String getHistory(JSONArray geodata) {
-        final int n = geodata.length();
         String his = "";
-        for (int i = 0; i < n; ++i) {
+        for (int i = 0; i < geodata.length(); ++i) {
             JSONObject person = geodata.getJSONObject(i);
-                his += "   " + (person.has("name") ? person.getString("name"):person.getString("permissionId")) + ": " + person.getString("role") + "\n";
+            his += "   " + (person.has("name") ? person.getString("name") : person.getString("permissionId")) + ": " + person.getString("role") + "\n";
         }
         return his;
     }
@@ -246,7 +291,6 @@ public class api_v1 {
             cell = dataRow.createCell(4);
             cell.setCellValue("Activities");
             row++;
-
             for (Employee product : al) {
                 dataRow = list.createRow(row);
                 cell = dataRow.createCell(0);
@@ -261,7 +305,6 @@ public class api_v1 {
                 cell.setCellValue(product.getHistory());
                 row++;
             }
-
             wb.write(fileout);
             fileout.close();
         } catch (Exception e) {
