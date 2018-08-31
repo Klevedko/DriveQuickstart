@@ -17,6 +17,7 @@ import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 import com.google.api.services.drive.model.PermissionList;
+import com.google.api.services.drive.model.StartPageToken;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -176,16 +177,18 @@ public class api_v1 {
         } else {
             System.out.println("Files:");
             for (File file : files) {
-                System.out.printf("%s (%s)\n", file.getName(), file.getId());
+                //System.out.printf("%s (%s)\n", file.getName(), file.getId());
                     //List<com.google.api.services.drive.model.User> l = file.getOwners();
-                PermissionList permissionList = driveservice.permissions().list(file.getId())//.setPageToken("nextPageToken")
+                if(file.getName().equals("ofv_jiradb_report.7z")){
+                PermissionList permissionList = driveservice.permissions().list(file.getId()).setPageSize(100).setFields("permissions(id, emailAddress)")
                         .execute();
                         List<com.google.api.services.drive.model.Permission> p = permissionList.getPermissions();
                     /*for( com.google.api.services.drive.model.User user : l){
                         System.out.println(user.getEmailAddress());*/
                         for ( com.google.api.services.drive.model.Permission pe : p){
-                            System.out.println(pe.getEmailAddress());
-                        }
+                            System.out.println("ssssssssssssssss");
+                            System.out.println(pe.getId() + pe.getEmailAddress());
+                        }}
                     /*}*/
             }
         }
