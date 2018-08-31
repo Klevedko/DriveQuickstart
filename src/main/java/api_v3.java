@@ -8,7 +8,6 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
-import com.google.api.services.appsactivity.model.Parent;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.*;
@@ -17,11 +16,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
-import java.security.Permission;
 import java.util.Collections;
 import java.util.List;
 
-public class DriveQuickstart2 {
+public class api_v3 {
     private static final String APPLICATION_NAME = "Google Drive API Java Quickstart";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "tokensMaster";
@@ -41,7 +39,7 @@ public class DriveQuickstart2 {
      */
     private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
         // Load client secrets.
-        InputStream in = DriveQuickstart.class.getResourceAsStream("credentialsMaster.json");
+        InputStream in = api_v1.class.getResourceAsStream("credentialsMaster.json");
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 
         // Build flow and trigger user authorization request.
@@ -50,7 +48,7 @@ public class DriveQuickstart2 {
                 .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
                 .setAccessType("offline")
                 .build();
-        return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("user");
+        return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("akrasilnikov@i-novus.ru");
     }
 
     public static void main(String... args) throws IOException, GeneralSecurityException {
@@ -60,11 +58,10 @@ public class DriveQuickstart2 {
         Drive service = new Drive.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
                 .setApplicationName(APPLICATION_NAME)
                 .build();
-
         // Print the names and IDs for up to 10 files.
         FileList result = service.files().list()
-                .setPageSize(10)
-                .setFields("nextPageToken, files(id, name)")
+                //.setPageSize(10)
+                .setFields("nextPageToken, files(id, name, owners)")
                 .execute();
         List<File> files = result.getFiles();
         if (files == null || files.isEmpty()) {
@@ -72,24 +69,23 @@ public class DriveQuickstart2 {
         } else {
             System.out.println("Files:");
             for (File file : files) {
-
                 System.out.printf("%s (%s)\n", file.getName(), file.getId());
+                if(file.getName().equals("permissions")){
+                List<User> l = file.getOwners();
+                for( User user : l){
+                    System.out.println(user.getEmailAddress());
+                }}
             }
         }
         Drive driveService = new Drive.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
                 .setApplicationName(APPLICATION_NAME)
                 .build();
+
         ChangeList changes = driveService.changes().list("3411")
                 .execute();
         for (Change change : changes.getChanges()) {
             // Process change
-            System.out.println("Change found for file: " + change.getFileId());
-
+            System.out.println("Change found for file: "+   change.getFileId());
         }
-        /*if (changes.getNewStartPageToken() != null) {
-            // Last page, save this token for the next polling interval
-            savedStartPageToken = changes.getNewStartPageToken();
-        }
-        pageToken = changes.getNextPageToken();*/
     }
 }

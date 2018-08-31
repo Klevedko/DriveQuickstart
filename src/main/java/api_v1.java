@@ -25,7 +25,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
 
-public class DriveQuickstart {
+public class api_v1 {
     /**
      * Application name.
      */
@@ -86,7 +86,7 @@ public class DriveQuickstart {
     public static Credential authorize() throws IOException {
         // Load client secrets.
         InputStream in =
-                DriveQuickstart.class.getResourceAsStream("/credentials.json");
+                api_v1.class.getResourceAsStream("/credentials.json");
         GoogleClientSecrets clientSecrets =
                 GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 
@@ -124,7 +124,7 @@ public class DriveQuickstart {
         ListActivitiesResponse result = service.activities().list()
                 .setSource("drive.google.com")
                 .setDriveAncestorId("root")
-                .setPageSize(111)
+                //.setPageSize(111)
                 .execute();
 
         List<Activity> activities = result.getActivities();
