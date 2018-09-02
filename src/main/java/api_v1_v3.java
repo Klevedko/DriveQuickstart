@@ -17,7 +17,6 @@ import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 import com.google.api.services.drive.model.PermissionList;
-import com.google.api.services.drive.model.StartPageToken;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -32,7 +31,7 @@ import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
 import java.util.*;
 
-public class api_v1 {
+public class api_v1_v3 {
     /**
      * Application name.
      */
@@ -96,7 +95,7 @@ public class api_v1 {
     public static Credential authorize() throws IOException {
         // Load client secrets.
         InputStream in =
-                api_v1.class.getResourceAsStream("/credentials.json");
+                api_v1_v3.class.getResourceAsStream("/credentials.json");
         GoogleClientSecrets clientSecrets =
                 GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 
@@ -116,7 +115,7 @@ public class api_v1 {
 
     private static Credential getCredentials() throws IOException {
         // Load client secrets.
-        InputStream in = api_v1.class.getResourceAsStream("credentialsMaster.json");
+        InputStream in = api_v1_v3.class.getResourceAsStream("credentialsMaster.json");
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 
         // Build flow and trigger user authorization request.
@@ -166,33 +165,22 @@ public class api_v1 {
         } else
             read_activities(activities);
 
-        Drive driveservice = getDriveService();
-        FileList drive_result = driveservice.files().list()
-                //.setPageSize(10)
-                .setFields("nextPageToken, files(id, name, owners, permissions)")
-                .execute();
-        List<File> files = drive_result.getFiles();
-        if (files == null || files.isEmpty()) {
-            System.out.println("No files found.");
-        } else {
-            System.out.println("Files:");
-            for (File file : files) {
-                //System.out.printf("%s (%s)\n", file.getName(), file.getId());
-                    //List<com.google.api.services.drive.model.User> l = file.getOwners();
-                if(file.getName().equals("ofv_jiradb_report.7z")){
-                PermissionList permissionList = driveservice.permissions().list(file.getId()).setPageSize(100).setFields("permissions(id, emailAddress)")
-                        .execute();
-                        List<com.google.api.services.drive.model.Permission> p = permissionList.getPermissions();
-                    /*for( com.google.api.services.drive.model.User user : l){
-                        System.out.println(user.getEmailAddress());*/
-                        for ( com.google.api.services.drive.model.Permission pe : p){
-                            System.out.println("ssssssssssssssss");
-                            System.out.println(pe.getId() + pe.getEmailAddress());
-                        }}
-                    /*}*/
-            }
-        }
 
+    }
+
+    public static String read_editors(String fileid) {
+        String s = "";
+        try {
+            Drive driveservice = getDriveService();
+            PermissionList permissionList = driveservice.permissions().list(fileid).setPageSize(100).setFields("permissions(id, displayName, emailAddress)")
+                    .execute();
+            List<com.google.api.services.drive.model.Permission> p = permissionList.getPermissions();
+            for (com.google.api.services.drive.model.Permission pe : p) {
+                s = pe.getDisplayName() + pe.getEmailAddress();
+            }
+        } catch (Exception e) {
+        }
+        return s;
     }
 
     public static void read_activities(List<Activity> activities) {
@@ -211,7 +199,7 @@ public class api_v1 {
                 }
                 String evlist_string = "";
                 System.out.printf("%s: %s. FILE: %s,  ACTION: %s. GETPERMISSIONCHANGES_JSON %s\n",
-                        date,user.getName(),target.getName(),event.getPrimaryEventType(),event.getPermissionChanges());
+                        date, user.getName(), target.getName(), event.getPrimaryEventType(), event.getPermissionChanges());
 
                 List<PermissionChange> evlist = event.getPermissionChanges();
                 if (!(evlist == null)) {
@@ -246,7 +234,7 @@ public class api_v1 {
                     }
                     history = historyAdd.concat(historyDel.concat(historyRem));
                     System.out.println(history);
-                    al.add(new Employee(date, user.getName(), target.getName(), event.getPrimaryEventType(), history));
+                    al.add(new Employee(date, user.getName(), target.getName(), event.getPrimaryEventType(), history, read_editors(target.getId())));
                     clearAll();
                 }
             }
@@ -293,6 +281,8 @@ public class api_v1 {
             cell.setCellValue("Action");
             cell = dataRow.createCell(4);
             cell.setCellValue("Activities");
+            cell = dataRow.createCell(5);
+            cell.setCellValue("getV1_getEditors");
             row++;
             for (Employee product : al) {
                 dataRow = list.createRow(row);
@@ -306,6 +296,8 @@ public class api_v1 {
                 cell.setCellValue(product.getGetPrimaryEventType());
                 cell = dataRow.createCell(4);
                 cell.setCellValue(product.getHistory());
+                cell = dataRow.createCell(5);
+                cell.setCellValue(product.getV1_getEditors());
                 row++;
             }
             wb.write(fileout);

@@ -39,7 +39,7 @@ public class api_v3 {
      */
     private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
         // Load client secrets.
-        InputStream in = api_v1.class.getResourceAsStream("credentialsMaster.json");
+        InputStream in = api_v1_v3.class.getResourceAsStream("credentialsMaster.json");
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 
         // Build flow and trigger user authorization request.

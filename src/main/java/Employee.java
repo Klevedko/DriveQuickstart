@@ -7,14 +7,7 @@ public class Employee implements Serializable, Comparable<Employee> {
     private String target_name;
     private String getPrimaryEventType;
     private String history;
-
-    public Employee(String date, String name, String target_name, String getPrimaryEventType, String history) {
-        this.date = date;
-        this.name = name;
-        this.target_name = target_name;
-        this.getPrimaryEventType = getPrimaryEventType;
-        this.history = history;
-    }
+    private String v1_getEditors;
 
     public String getDate() {
         return date;
@@ -54,6 +47,24 @@ public class Employee implements Serializable, Comparable<Employee> {
 
     public void setHistory(String history) {
         this.history = history;
+    }
+
+    public String getV1_getEditors() {
+        return v1_getEditors;
+    }
+
+    public void setV1_getEditors(String v1_getEditors) {
+        this.v1_getEditors = v1_getEditors;
+    }
+
+    public Employee(String date, String name, String target_name, String getPrimaryEventType, String history, String v1_getEditors) {
+
+        this.date = date;
+        this.name = name;
+        this.target_name = target_name;
+        this.getPrimaryEventType = getPrimaryEventType;
+        this.history = history;
+        this.v1_getEditors = v1_getEditors;
     }
 
     @Override
