@@ -1,11 +1,11 @@
 import java.io.Serializable;
 
-public class Employee implements Serializable, Comparable<Employee> {
+public class audit_map implements Serializable, Comparable<audit_map> {
 
     private String date;
     private String name;
     private String target_name;
-    private String getPrimaryEventType;
+    private String eventAction;
     private String history;
     private String v1_getEditors;
 
@@ -33,12 +33,12 @@ public class Employee implements Serializable, Comparable<Employee> {
         this.target_name = target_name;
     }
 
-    public String getGetPrimaryEventType() {
-        return getPrimaryEventType;
+    public String getEventAction() {
+        return eventAction;
     }
 
-    public void setGetPrimaryEventType(String getPrimaryEventType) {
-        this.getPrimaryEventType = getPrimaryEventType;
+    public void setEventAction(String eventAction) {
+        this.eventAction = eventAction;
     }
 
     public String getHistory() {
@@ -57,18 +57,18 @@ public class Employee implements Serializable, Comparable<Employee> {
         this.v1_getEditors = v1_getEditors;
     }
 
-    public Employee(String date, String name, String target_name, String getPrimaryEventType, String history, String v1_getEditors) {
+    public audit_map(String date, String name, String target_name, String eventAction, String history, String v1_getEditors) {
 
         this.date = date;
         this.name = name;
         this.target_name = target_name;
-        this.getPrimaryEventType = getPrimaryEventType;
+        this.eventAction = eventAction;
         this.history = history;
         this.v1_getEditors = v1_getEditors;
     }
 
     @Override
-    public int compareTo(Employee o) {
+    public int compareTo(audit_map o) {
         int result = this.target_name.compareToIgnoreCase(o.target_name);
         if(result != 0){
             return result;
@@ -78,10 +78,10 @@ public class Employee implements Serializable, Comparable<Employee> {
     }
 
     @Override
-    //this is required to print the user friendly information about the Employee
+    //this is required to print the user friendly information about the audit_map
     public String toString() {
-        return "[date=" + this.date + ", name=" + this.name + ", target_name=" + this.target_name + ", getPrimaryEventType=" +
-                this.getPrimaryEventType + ", history=" + this.history +"]";
+        return "[date=" + this.date + ", name=" + this.name + ", target_name=" + this.target_name + ", eventAction=" +
+                this.eventAction + ", history=" + this.history +"]";
     }
 
 }

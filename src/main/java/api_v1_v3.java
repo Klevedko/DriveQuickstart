@@ -14,8 +14,6 @@ import com.google.api.services.appsactivity.AppsactivityScopes;
 import com.google.api.services.appsactivity.model.*;
 import com.google.api.services.appsactivity.model.User;
 import com.google.api.services.drive.Drive;
-import com.google.api.services.drive.model.File;
-import com.google.api.services.drive.model.FileList;
 import com.google.api.services.drive.model.PermissionList;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
@@ -107,7 +105,7 @@ public class api_v1_v3 {
                         .setAccessType("offline")
                         .build();
         Credential credential = new AuthorizationCodeInstalledApp(
-                flow, new LocalServerReceiver()).authorize("user");
+                flow, new LocalServerReceiver()).authorize("akrasilnikov@i-novus.ru");
         System.out.println(
                 "Credentials saved to " + DATA_STORE_DIR.getAbsolutePath());
         return credential;
@@ -164,19 +162,17 @@ public class api_v1_v3 {
             System.out.println("No activity.");
         } else
             read_activities(activities);
-
-
     }
 
     public static String read_editors(String fileid) {
         String s = "";
         try {
             Drive driveservice = getDriveService();
-            PermissionList permissionList = driveservice.permissions().list(fileid).setPageSize(100).setFields("permissions(id, displayName, emailAddress)")
+            PermissionList permissionList = driveservice.permissions().list(fileid).setPageSize(100).setFields("permissions(id, displayName, emailAddress, role)")
                     .execute();
             List<com.google.api.services.drive.model.Permission> p = permissionList.getPermissions();
             for (com.google.api.services.drive.model.Permission pe : p) {
-                s = pe.getDisplayName() + pe.getEmailAddress();
+                s+= pe.getDisplayName() + " ( " + pe.getEmailAddress() + " ) : " + pe.getRole() + "\n";
             }
         } catch (Exception e) {
         }
@@ -185,7 +181,7 @@ public class api_v1_v3 {
 
     public static void read_activities(List<Activity> activities) {
         {
-            ArrayList<Employee> al = new ArrayList<Employee>();
+            ArrayList<audit_map> al = new ArrayList<audit_map>();
             System.out.println("Recent activity:");
 
             for (Activity activity : activities) {
@@ -206,11 +202,12 @@ public class api_v1_v3 {
                     for (PermissionChange permissionChange : evlist) {
                         evlist_string = evlist_string + permissionChange;
                     }
-                    if (event.getPrimaryEventType().equals("permissionChange")
+                   /* if (event.getPrimaryEventType().equals("permissionChange")
                             || event.getPrimaryEventType().equals("create")
                             || event.getPrimaryEventType().equals("upload")
                             || event.getPrimaryEventType().equals("move")
-                            ) {
+                            )
+                    {*/
                         //if(event.getPrimaryEventType().equals("upload")){
                         JSONObject obj = new JSONObject(evlist_string);
                         try {
@@ -231,10 +228,10 @@ public class api_v1_v3 {
                             //System.out.println("rem" + geodata);
                         } catch (Exception e) {
                         }
-                    }
+                   // }
                     history = historyAdd.concat(historyDel.concat(historyRem));
                     System.out.println(history);
-                    al.add(new Employee(date, user.getName(), target.getName(), event.getPrimaryEventType(), history, read_editors(target.getId())));
+                    al.add(new audit_map(date, user.getName(), target.getName(), event.getPrimaryEventType(), history, read_editors(target.getId())));
                     clearAll();
                 }
             }
@@ -259,7 +256,7 @@ public class api_v1_v3 {
         historyRem = "";
     }
 
-    public static void write_to_file(ArrayList<Employee> al) {
+    public static void write_to_file(ArrayList<audit_map> al) {
         try {
             HSSFWorkbook wb = new HSSFWorkbook();
             Cell cell;
@@ -282,9 +279,9 @@ public class api_v1_v3 {
             cell = dataRow.createCell(4);
             cell.setCellValue("Activities");
             cell = dataRow.createCell(5);
-            cell.setCellValue("getV1_getEditors");
+            cell.setCellValue("Current rights on file");
             row++;
-            for (Employee product : al) {
+            for (audit_map product : al) {
                 dataRow = list.createRow(row);
                 cell = dataRow.createCell(0);
                 cell.setCellValue(product.getDate());
@@ -293,7 +290,7 @@ public class api_v1_v3 {
                 cell = dataRow.createCell(2);
                 cell.setCellValue(product.getTarget_name());
                 cell = dataRow.createCell(3);
-                cell.setCellValue(product.getGetPrimaryEventType());
+                cell.setCellValue(product.getEventAction());
                 cell = dataRow.createCell(4);
                 cell.setCellValue(product.getHistory());
                 cell = dataRow.createCell(5);
