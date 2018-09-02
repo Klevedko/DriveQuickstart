@@ -113,8 +113,8 @@ public class api_v1_v3 {
 
     private static Credential getCredentials() throws IOException {
         // Load client secrets.
-        InputStream in = api_v1_v3.class.getResourceAsStream("credentialsMaster.json");
-        GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
+        InputStream iny = api_v1_v3.class.getResourceAsStream("credentialss.json");
+        GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(iny));
 
         // Build flow and trigger user authorization request.
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
@@ -175,6 +175,7 @@ public class api_v1_v3 {
                 s+= pe.getDisplayName() + " ( " + pe.getEmailAddress() + " ) : " + pe.getRole() + "\n";
             }
         } catch (Exception e) {
+            System.out.println("=====" + e.getMessage() + e.getLocalizedMessage());
         }
         return s;
     }
