@@ -5,7 +5,6 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpTransport;
-import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
@@ -56,7 +55,6 @@ public class api_v1_v3 {
      * Global instance of the HTTP transport.
      */
     private static HttpTransport HTTP_TRANSPORT;
-    private static NetHttpTransport NETHTTP_TRANSPORT;
 
     /**
      * Global instance of the scopes required by this quickstart.
@@ -69,7 +67,6 @@ public class api_v1_v3 {
     static {
         try {
             HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-            NETHTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
             DATA_STORE_FACTORY = new FileDataStoreFactory(DATA_STORE_DIR);
         } catch (Throwable t) {
             t.printStackTrace();
@@ -88,7 +85,6 @@ public class api_v1_v3 {
     public static String historyDel = "";
     public static String historyRem = "";
     public static JSONArray geodata;
-    private static final String TOKENS_DIRECTORY_PATH = "tokensMaster";
 
     public static Credential authorize() throws IOException {
         // Load client secrets.
@@ -111,21 +107,6 @@ public class api_v1_v3 {
         return credential;
     }
 
-    private static Credential getCredentials() throws IOException {
-        // Load client secrets.
-        InputStream iny = api_v1_v3.class.getResourceAsStream("credentialss.json");
-        GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(iny));
-
-        // Build flow and trigger user authorization request.
-        GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
-                HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
-                .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
-                .setAccessType("offline")
-                .build();
-        return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("akrasilnikov@i-novus.ru");
-    }
-
-
     /**
      * Build and return an authorized Apps Activity client service.
      *
@@ -136,14 +117,6 @@ public class api_v1_v3 {
         Credential active_credential = authorize();
         return new Appsactivity.Builder(
                 HTTP_TRANSPORT, JSON_FACTORY, active_credential)
-                .setApplicationName(APPLICATION_NAME)
-                .build();
-    }
-
-    public static Drive getDriveService() throws IOException {
-        Credential drive_credential = getCredentials();
-        return new Drive.Builder(
-                NETHTTP_TRANSPORT, JSON_FACTORY, drive_credential)
                 .setApplicationName(APPLICATION_NAME)
                 .build();
     }
@@ -167,7 +140,8 @@ public class api_v1_v3 {
     public static String read_editors(String fileid) {
         String s = "";
         try {
-            Drive driveservice = getDriveService();
+            // используем 3 версию rest api чтобы получить пользаков и их роли ( к файлу )
+            Drive driveservice = api_v3.Drive();
             PermissionList permissionList = driveservice.permissions().list(fileid).setPageSize(100).setFields("permissions(id, displayName, emailAddress, role)")
                     .execute();
             List<com.google.api.services.drive.model.Permission> p = permissionList.getPermissions();
@@ -302,6 +276,5 @@ public class api_v1_v3 {
             fileout.close();
         } catch (Exception e) {
         }
-
     }
 }

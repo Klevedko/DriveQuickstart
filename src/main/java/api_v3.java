@@ -51,15 +51,20 @@ public class api_v3 {
         return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("akrasilnikov@i-novus.ru");
     }
 
-    public static void main(String... args) throws IOException, GeneralSecurityException {
-        // Build a new authorized API client service.
+    public static Drive Drive() throws IOException, GeneralSecurityException {
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
         System.out.println();
         Drive service = new Drive.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
                 .setApplicationName(APPLICATION_NAME)
                 .build();
+        return service;
+    }
+
+    public static void main(String... args) throws IOException, GeneralSecurityException {
+        // Build a new authorized API client service.
+
         // Print the names and IDs for up to 10 files.
-        FileList result = service.files().list()
+        FileList result = Drive().files().list()
                 //.setPageSize(10)
                 .setFields("nextPageToken, files(id, name, owners)")
                 .execute();
@@ -70,14 +75,15 @@ public class api_v3 {
             System.out.println("Files:");
             for (File file : files) {
                 System.out.printf("%s (%s)\n", file.getName(), file.getId());
-                if(file.getName().equals("permissions")){
-                List<User> l = file.getOwners();
-                for( User user : l){
-                    System.out.println(user.getEmailAddress());
-                }}
+                if (file.getName().equals("permissions")) {
+                    List<User> l = file.getOwners();
+                    for (User user : l) {
+                        System.out.println(user.getEmailAddress());
+                    }
+                }
             }
         }
-        Drive driveService = new Drive.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+        /*Drive driveService = new Drive.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
                 .setApplicationName(APPLICATION_NAME)
                 .build();
 
@@ -85,7 +91,7 @@ public class api_v3 {
                 .execute();
         for (Change change : changes.getChanges()) {
             // Process change
-            System.out.println("Change found for file: "+   change.getFileId());
-        }
+            System.out.println("Change found for file: " + change.getFileId());
+        }*/
     }
 }
