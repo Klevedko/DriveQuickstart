@@ -12,7 +12,6 @@ import com.google.api.services.drive.model.File;
 
 public class CreateGoogleFile {
 
-    // PRIVATE!
     private static File _createGoogleFile(String googleFolderIdParent, String contentType, //
                                           String customFileName, AbstractInputStreamContent uploadStreamContent) throws IOException {
 
@@ -39,7 +38,7 @@ public class CreateGoogleFile {
         return _createGoogleFile(googleFolderIdParent, contentType, customFileName, uploadStreamContent);
     }
 
-    // Create Google File from java.io.File
+    // Create Google File
     public static File createGoogleFile(String googleFolderIdParent, String contentType, //
                                         String customFileName, java.io.File uploadFile) throws IOException {
 
@@ -50,27 +49,19 @@ public class CreateGoogleFile {
     }
 
     // Create Google File from InputStream
-    public static File createGoogleFile(String googleFolderIdParent, String contentType, //
+    public static File createGoogleFile(String googleFolderIdParent, String contentType,
                                         String customFileName, InputStream inputStream) throws IOException {
-
-        //
         AbstractInputStreamContent uploadStreamContent = new InputStreamContent(contentType, inputStream);
-        //
         return _createGoogleFile(googleFolderIdParent, contentType, customFileName, uploadStreamContent);
     }
 
     public static void main(String[] args) throws IOException {
-
         java.io.File uploadFile = new java.io.File("audit_results.xls");
-
-        // Create Google File:
-
+        // Create  File:
         File googleFile = createGoogleFile(null,"/ODS", "audit_results.xls", uploadFile);
-
         System.out.println("Created Google file!");
         System.out.println("WebContentLink: " + googleFile.getWebContentLink() );
         System.out.println("WebViewLink: " + googleFile.getWebViewLink() );
-
         System.out.println("Done!");
     }
 

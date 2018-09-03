@@ -2,12 +2,15 @@ import java.io.Serializable;
 
 public class audit_map implements Serializable, Comparable<audit_map> {
 
+
+    private String eventID;
     private String date;
     private String name;
     private String target_name;
     private String eventAction;
     private String history;
     private String v1_getEditors;
+
 
     public String getDate() {
         return date;
@@ -56,9 +59,17 @@ public class audit_map implements Serializable, Comparable<audit_map> {
     public void setV1_getEditors(String v1_getEditors) {
         this.v1_getEditors = v1_getEditors;
     }
+    public String getEventID() {
+        return eventID;
+    }
 
-    public audit_map(String date, String name, String target_name, String eventAction, String history, String v1_getEditors) {
+    public void setEventID(String eventID) {
+        this.eventID = eventID;
+    }
 
+    public audit_map(String date, String name, String target_name, String eventAction, String history, String v1_getEditors){//, String eventID) {
+
+        //this.eventID=eventID;
         this.date = date;
         this.name = name;
         this.target_name = target_name;

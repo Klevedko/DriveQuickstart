@@ -8,6 +8,7 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
+import com.google.api.services.admin.reports.Reports;
 import com.google.api.services.appsactivity.Appsactivity;
 import com.google.api.services.appsactivity.AppsactivityScopes;
 import com.google.api.services.appsactivity.model.*;
@@ -38,7 +39,7 @@ public class api_v1_v3 {
     /**
      * Directory to store authorization tokens for this application.
      */
-    private static final java.io.File DATA_STORE_DIR = new java.io.File("tokens");
+    private static final java.io.File DATA_STORE_DIR = new java.io.File("token_v1");
 
     /**
      * Global instance of the {@link FileDataStoreFactory}.
@@ -85,6 +86,7 @@ public class api_v1_v3 {
     public static String historyDel = "";
     public static String historyRem = "";
     public static JSONArray geodata;
+    public static ArrayList<audit_map> al = new ArrayList<audit_map>();
 
     public static Credential authorize() throws IOException {
         // Load client secrets.
@@ -129,7 +131,6 @@ public class api_v1_v3 {
                 .setDriveAncestorId("root")
                 //.setPageSize(111)
                 .execute();
-
         List<Activity> activities = result.getActivities();
         if (activities == null || activities.size() == 0) {
             System.out.println("No activity.");
@@ -137,26 +138,9 @@ public class api_v1_v3 {
             read_activities(activities);
     }
 
-    public static String read_editors(String fileid) {
-        String s = "";
-        try {
-            // используем 3 версию rest api чтобы получить пользаков и их роли ( к файлу )
-            Drive driveservice = api_v3.Drive();
-            PermissionList permissionList = driveservice.permissions().list(fileid).setPageSize(100).setFields("permissions(id, displayName, emailAddress, role)")
-                    .execute();
-            List<com.google.api.services.drive.model.Permission> p = permissionList.getPermissions();
-            for (com.google.api.services.drive.model.Permission pe : p) {
-                s+= pe.getDisplayName() + " ( " + pe.getEmailAddress() + " ) : " + pe.getRole() + "\n";
-            }
-        } catch (Exception e) {
-            System.out.println("=====" + e.getMessage() + e.getLocalizedMessage());
-        }
-        return s;
-    }
 
     public static void read_activities(List<Activity> activities) {
         {
-            ArrayList<audit_map> al = new ArrayList<audit_map>();
             System.out.println("Recent activity:");
 
             for (Activity activity : activities) {
@@ -187,25 +171,24 @@ public class api_v1_v3 {
                         JSONObject obj = new JSONObject(evlist_string);
                         try {
                             geodata = obj.getJSONArray("addedPermissions");
-                            //System.out.println("add" + geodata);
                             historyAdd = "addedPermissions:\n" + getHistory(geodata);
                         } catch (Exception e) {
                         }
                         try {
                             geodata = obj.getJSONArray("deletedPermissions");
-                            //System.out.println("del" + geodata);
                             historyDel = "deletedPermissions:\n" + getHistory(geodata);
                         } catch (Exception e) {
                         }
                         try {
                             geodata = obj.getJSONArray("removedPermissions");
                             historyRem = "removedPermissions:\n" + getHistory(geodata);
-                            //System.out.println("rem" + geodata);
                         } catch (Exception e) {
                         }
                    // }
                     history = historyAdd.concat(historyDel.concat(historyRem));
                     System.out.println(history);
+                    String history_str = read_editors(target.getId());
+
                     al.add(new audit_map(date, user.getName(), target.getName(), event.getPrimaryEventType(), history, read_editors(target.getId())));
                     clearAll();
                 }
@@ -213,6 +196,23 @@ public class api_v1_v3 {
             Collections.sort(al);
             write_to_file(al);
         }
+    }
+
+    public static String read_editors(String fileid) {
+        String s = "";
+        try {
+            // используем 3 версию rest api чтобы получить пользаков и их роли ( к файлу )
+            Drive driveservice = api_v3.Drive();
+            PermissionList permissionList = driveservice.permissions().list(fileid).setPageSize(100).setFields("permissions(id, displayName, emailAddress, role)")
+                    .execute();
+            List<com.google.api.services.drive.model.Permission> p = permissionList.getPermissions();
+            for (com.google.api.services.drive.model.Permission pe : p) {
+                s+= pe.getDisplayName() + " ( " + pe.getEmailAddress() + " ) : " + pe.getRole() + "\n";
+            }
+        } catch (Exception e) {
+            System.out.println("=====" + e.getMessage() + e.getLocalizedMessage());
+        }
+        return s;
     }
 
     public static String getHistory(JSONArray geodata) {

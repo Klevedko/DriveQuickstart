@@ -22,7 +22,7 @@ import java.util.List;
 public class api_v3 {
     private static final String APPLICATION_NAME = "Google Drive API Java Quickstart";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
-    private static final String TOKENS_DIRECTORY_PATH = "tokensMaster";
+    private static final String TOKENS_DIRECTORY_PATH = "token_v3";
 
     /**
      * Global instance of the scopes required by this quickstart.
