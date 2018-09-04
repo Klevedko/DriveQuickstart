@@ -94,7 +94,7 @@ public class Apiv1v3cron implements Job {
     public static JSONArray geodata;
     public static ArrayList<AuditMap> al = new ArrayList<AuditMap>();
     public static Boolean allEmailFromINovus;
-    public final String[] arguments = new String[] {"123"};
+    public final String[] arguments = new String[]{"123"};
     public static DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:ms");
 
     public static Credential authorize() throws IOException {
@@ -134,6 +134,7 @@ public class Apiv1v3cron implements Job {
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
         System.out.println("1111111111111111111111111111111111111111111111111111111111111111");
+        System.out.println(dateFormat.format(new Date()));
         try {
             System.out.println("start hash= ");
             TestCheckSum.main(arguments);
@@ -156,13 +157,13 @@ public class Apiv1v3cron implements Job {
 
         } catch (Exception exec) {
         }
+        System.out.println(dateFormat.format(new Date()));
+
     }
 
     public static void read_activities(List<Activity> activities) {
         System.out.println("Recent activity:");
         System.out.println("STARTsize=" + al.size());
-        System.out.println(dateFormat.format(new Date()));
-
         for (Activity activity : activities) {
             Event event = activity.getCombinedEvent();
             User user = event.getUser();
@@ -181,22 +182,26 @@ public class Apiv1v3cron implements Job {
                     evlist_string = evlist_string + permissionChange;
                 }
                 addedDeletedRemovedPermissions(evlist_string);
-                String read_editors_str = read_editors(target.getId());
                 // получаем очередную строку, если read_editors содержит что то БЕЗ i-novus, добавляем
-                AuditMap candy = new AuditMap(date, user.getName(), target.getName(), event.getPrimaryEventType(), history, read_editors_str);
-               /* if (!(al.contains(candy))) {
-                    System.out.println("index candy= " + al.indexOf(candy));
+                AuditMap candy = new AuditMap(date, user.getName(), target.getName(), event.getPrimaryEventType(), history, "");
+                if (!(al.contains(candy))) {
                     System.out.println("adding!");
-//                    System.out.println((date+ user.getName()+ target.getName()+ event.getPrimaryEventType()+ history+ read_editors_str));
-                    al.add(new AuditMap(date, user.getName(), target.getName(), event.getPrimaryEventType(), history, read_editors_str));
-                }*/
+                    String read_editors_str = read_editors(target.getId());
+                    candy.setV1_getEditors(read_editors_str);
+                    al.add(candy);
+                }
+                else
+                {
+                    System.out.println("already exists!");
+                }
             }
+
             history = historyDel = historyAdd = historyRem = "";
         }
+
         System.out.println("ENDsize=" + al.size());
         Collections.sort(al);
         write_to_file(al);
-        System.out.println(dateFormat.format(new Date()));
 
     }
 
