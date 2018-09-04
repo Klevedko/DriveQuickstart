@@ -2,7 +2,7 @@ package Quartz;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 import api.api_v1_v3_cron;
-public class CronTriggerExample 
+public class CronBuild
 {
     public static void main( String[] args ) throws Exception
     {

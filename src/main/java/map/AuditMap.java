@@ -1,4 +1,4 @@
-package api;
+package map;
 
 import java.io.Serializable;
 
@@ -105,7 +105,7 @@ public class AuditMap implements Serializable, Comparable<AuditMap> {
     }
 
     @Override
-    //this is required to print the user friendly information about the api.AuditMap
+    //this is required to print the user friendly information about the map.AuditMap
     public String toString() {
         return "[date=" + this.date + ", name=" + this.name + ", target_name=" + this.target_name + ", eventAction=" +
                 this.eventAction + ", history=" + this.history + "]";
