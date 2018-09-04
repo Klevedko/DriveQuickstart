@@ -43,5 +43,6 @@ dependencies {
     compile 'org.apache.poi:poi:3.9'
     compile 'org.json:json:20160212'
     compile group: 'net.java.dev.jna', name: 'jna-platform', version: '4.2.2'
+    compile group: 'org.quartz-scheduler', name: 'quartz', version: '2.2.1'
 
 }

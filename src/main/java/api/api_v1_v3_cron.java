@@ -1,3 +1,5 @@
+package api;
+
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
@@ -8,11 +10,9 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
-import com.google.api.services.admin.reports.Reports;
 import com.google.api.services.appsactivity.Appsactivity;
 import com.google.api.services.appsactivity.AppsactivityScopes;
 import com.google.api.services.appsactivity.model.*;
-import com.google.api.services.appsactivity.model.User;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.PermissionList;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -21,15 +21,17 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.quartz.Job;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.security.GeneralSecurityException;
 import java.util.*;
 
-public class api_v1_v3 {
+public class api_v1_v3_cron implements Job {
     /**
      * Application name.
      */
@@ -70,7 +72,7 @@ public class api_v1_v3 {
             HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
             DATA_STORE_FACTORY = new FileDataStoreFactory(DATA_STORE_DIR);
         } catch (Throwable t) {
-            t.printStackTrace();
+            //t.printStackTrace();
             System.exit(1);
         }
     }
@@ -86,12 +88,13 @@ public class api_v1_v3 {
     public static String historyDel = "";
     public static String historyRem = "";
     public static JSONArray geodata;
-    public static ArrayList<audit_map> al = new ArrayList<audit_map>();
+    public static ArrayList<AuditMap> al = new ArrayList<AuditMap>();
+    public static Boolean allEmailFromINovus;
 
     public static Credential authorize() throws IOException {
         // Load client secrets.
         InputStream in =
-                api_v1_v3.class.getResourceAsStream("/credentials.json");
+                api_v1_v3_cron.class.getResourceAsStream("/credentials.json");
         GoogleClientSecrets clientSecrets =
                 GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 
@@ -123,8 +126,15 @@ public class api_v1_v3 {
                 .build();
     }
 
-    public static void main(String[] args) throws IOException, GeneralSecurityException {
-        Appsactivity service = getAppsactivityService();
+    public void execute(JobExecutionContext context) throws JobExecutionException {
+        System.out.println("kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk");
+        System.out.println("kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk");
+        System.out.println("kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk");
+        System.out.println("kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk");
+        System.out.println("kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk");
+        System.out.println("kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk");
+        try{
+            Appsactivity service = getAppsactivityService();
 // папка для мониторинга
         ListActivitiesResponse result = service.activities().list()
                 .setSource("drive.google.com")
@@ -136,70 +146,76 @@ public class api_v1_v3 {
             System.out.println("No activity.");
         } else
             read_activities(activities);
+            System.out.println("ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc");
+            System.out.println("ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc");
+            System.out.println("ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc");
+            System.out.println("ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc");
+        }catch (Exception exec){}
     }
 
-
     public static void read_activities(List<Activity> activities) {
-        {
-            System.out.println("Recent activity:");
+        System.out.println("Recent activity:");
+        System.out.println("STARTsize=" + al.size());
 
-            for (Activity activity : activities) {
-                Event event = activity.getCombinedEvent();
-                User user = event.getUser();
-                Target target = event.getTarget();
-                String date = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(new java.util.Date(event.getEventTimeMillis().longValue()));
+        for (Activity activity : activities) {
+            Event event = activity.getCombinedEvent();
+            User user = event.getUser();
+            Target target = event.getTarget();
+            String date = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(new Date(event.getEventTimeMillis().longValue()));
 
-                if (user == null || target == null) {
-                    continue;
+            if (user == null || target == null) {
+                continue;
+            }
+            String evlist_string = "";
+            //System.out.printf("%s: %s. FILE: %s,  ACTION: %s. GETPERMISSIONCHANGES_JSON %s\n",date, user.getName(), target.getName(), event.getPrimaryEventType(), event.getPermissionChanges());
+
+            List<PermissionChange> evlist = event.getPermissionChanges();
+            if (!(evlist == null)) {
+                for (PermissionChange permissionChange : evlist) {
+                    evlist_string = evlist_string + permissionChange;
                 }
-                String evlist_string = "";
-                System.out.printf("%s: %s. FILE: %s,  ACTION: %s. GETPERMISSIONCHANGES_JSON %s\n",
-                        date, user.getName(), target.getName(), event.getPrimaryEventType(), event.getPermissionChanges());
-
-                List<PermissionChange> evlist = event.getPermissionChanges();
-                if (!(evlist == null)) {
-                    for (PermissionChange permissionChange : evlist) {
-                        evlist_string = evlist_string + permissionChange;
-                    }
-                   /* if (event.getPrimaryEventType().equals("permissionChange")
-                            || event.getPrimaryEventType().equals("create")
-                            || event.getPrimaryEventType().equals("upload")
-                            || event.getPrimaryEventType().equals("move")
-                            )
-                    {*/
-                        //if(event.getPrimaryEventType().equals("upload")){
-                        JSONObject obj = new JSONObject(evlist_string);
-                        try {
-                            geodata = obj.getJSONArray("addedPermissions");
-                            historyAdd = "addedPermissions:\n" + getHistory(geodata);
-                        } catch (Exception e) {
-                        }
-                        try {
-                            geodata = obj.getJSONArray("deletedPermissions");
-                            historyDel = "deletedPermissions:\n" + getHistory(geodata);
-                        } catch (Exception e) {
-                        }
-                        try {
-                            geodata = obj.getJSONArray("removedPermissions");
-                            historyRem = "removedPermissions:\n" + getHistory(geodata);
-                        } catch (Exception e) {
-                        }
-                   // }
-                    history = historyAdd.concat(historyDel.concat(historyRem));
-                    System.out.println(history);
-                    String history_str = read_editors(target.getId());
-
-                    al.add(new audit_map(date, user.getName(), target.getName(), event.getPrimaryEventType(), history, read_editors(target.getId())));
-                    clearAll();
+                addedDeletedRemovedPermissions(evlist_string);
+                String read_editors_str = read_editors(target.getId());
+                // получаем очередную строку, если read_editors содержит что то БЕЗ i-novus, добавляем
+                AuditMap candy = new AuditMap(date, user.getName(), target.getName(), event.getPrimaryEventType(), history, read_editors_str);
+                if (!(al.contains(candy))) {
+                    System.out.println("index candy= " + al.indexOf(candy));
+                    System.out.println("adding!");
+//                    System.out.println((date+ user.getName()+ target.getName()+ event.getPrimaryEventType()+ history+ read_editors_str));
+                    al.add(new AuditMap(date, user.getName(), target.getName(), event.getPrimaryEventType(), history, read_editors_str));
                 }
             }
-            Collections.sort(al);
-            write_to_file(al);
+            history = historyDel = historyAdd = historyRem = "";
         }
+        System.out.println("ENDsize=" + al.size());
+        Collections.sort(al);
+        write_to_file(al);
+        System.out.println("END");
+    }
+
+    public static void addedDeletedRemovedPermissions(String evlist_string) {
+        JSONObject obj = new JSONObject(evlist_string);
+        try {
+            geodata = obj.getJSONArray("addedPermissions");
+            historyAdd = "addedPermissions:\n" + getHistory(geodata);
+        } catch (Exception e) {
+        }
+        try {
+            geodata = obj.getJSONArray("deletedPermissions");
+            historyDel = "deletedPermissions:\n" + getHistory(geodata);
+        } catch (Exception e) {
+        }
+        try {
+            geodata = obj.getJSONArray("removedPermissions");
+            historyRem = "removedPermissions:\n" + getHistory(geodata);
+        } catch (Exception e) {
+        }
+        history = historyAdd.concat(historyDel.concat(historyRem));
     }
 
     public static String read_editors(String fileid) {
         String s = "";
+        allEmailFromINovus = true;
         try {
             // используем 3 версию rest api чтобы получить пользаков и их роли ( к файлу )
             Drive driveservice = api_v3.Drive();
@@ -207,7 +223,12 @@ public class api_v1_v3 {
                     .execute();
             List<com.google.api.services.drive.model.Permission> p = permissionList.getPermissions();
             for (com.google.api.services.drive.model.Permission pe : p) {
-                s+= pe.getDisplayName() + " ( " + pe.getEmailAddress() + " ) : " + pe.getRole() + "\n";
+                s += pe.getDisplayName() + " ( " + pe.getEmailAddress() + " ) : " + pe.getRole() + "\n";
+                if (pe.getEmailAddress() != null) {
+                    if (!(pe.getEmailAddress().toLowerCase().contains("@i-novus"))) {
+                        allEmailFromINovus = false;
+                    }
+                }
             }
         } catch (Exception e) {
             System.out.println("=====" + e.getMessage() + e.getLocalizedMessage());
@@ -224,18 +245,12 @@ public class api_v1_v3 {
         return his;
     }
 
-    public static void clearAll() {
-        history = "";
-        historyDel = "";
-        historyAdd = "";
-        historyRem = "";
-    }
 
-    public static void write_to_file(ArrayList<audit_map> al) {
+    public static void write_to_file(ArrayList<AuditMap> al) {
         try {
             HSSFWorkbook wb = new HSSFWorkbook();
             Cell cell;
-            Sheet list = wb.createSheet("SheetName");
+            Sheet list = wb.createSheet("Go");
             byte row = 0;
             String output = "audit_results.xls";
 
@@ -256,7 +271,7 @@ public class api_v1_v3 {
             cell = dataRow.createCell(5);
             cell.setCellValue("Current rights on file");
             row++;
-            for (audit_map product : al) {
+            for (AuditMap product : al) {
                 dataRow = list.createRow(row);
                 cell = dataRow.createCell(0);
                 cell.setCellValue(product.getDate());
@@ -275,6 +290,7 @@ public class api_v1_v3 {
             wb.write(fileout);
             fileout.close();
         } catch (Exception e) {
+            //System.out.println(e.getMessage());
         }
     }
 }
