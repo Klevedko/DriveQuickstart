@@ -5,7 +5,6 @@ import java.io.Serializable;
 public class AuditMap implements Serializable, Comparable<AuditMap> {
 
 
-    private String eventID;
     private String date;
     private String name;
     private String target_name;
@@ -62,14 +61,6 @@ public class AuditMap implements Serializable, Comparable<AuditMap> {
         this.v1_getEditors = v1_getEditors;
     }
 
-    public String getEventID() {
-        return eventID;
-    }
-
-    public void setEventID(String eventID) {
-        this.eventID = eventID;
-    }
-
     public AuditMap(String date, String name, String target_name, String eventAction, String history, String v1_getEditors) {//, String eventID) {
 
         //this.eventID=eventID;
@@ -91,6 +82,7 @@ public class AuditMap implements Serializable, Comparable<AuditMap> {
         }
     }
 
+    @Override
     public boolean equals(Object obj) {
         AuditMap that = (AuditMap) obj;
         if (
@@ -100,7 +92,6 @@ public class AuditMap implements Serializable, Comparable<AuditMap> {
                 || !(this.eventAction.equals(that.eventAction))
                 || !(this.history.equals(that.history))
                 ) return false;
-
         return true;
     }
 

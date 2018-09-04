@@ -31,7 +31,7 @@ import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
 import java.util.*;
 
-public class api_v1_v3 {
+public class Apiv1v3 {
     /**
      * Application name.
      */
@@ -94,7 +94,7 @@ public class api_v1_v3 {
     public static Credential authorize() throws IOException {
         // Load client secrets.
         InputStream in =
-                api_v1_v3.class.getResourceAsStream("/credentials.json");
+                Apiv1v3.class.getResourceAsStream("/credentials.json");
         GoogleClientSecrets clientSecrets =
                 GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 
@@ -202,7 +202,7 @@ public class api_v1_v3 {
         allFromINovus = true;
         try {
             // используем 3 версию rest api чтобы получить пользаков и их роли ( к файлу )
-            Drive driveservice = api_v3.Drive();
+            Drive driveservice = Apiv3.Drive();
             PermissionList permissionList = driveservice.permissions().list(fileid).setPageSize(100).setFields("permissions(id, displayName, emailAddress, role)")
                     .execute();
             List<com.google.api.services.drive.model.Permission> p = permissionList.getPermissions();

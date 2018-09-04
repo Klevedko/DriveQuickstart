@@ -26,13 +26,16 @@ import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class api_v1_v3_cron implements Job {
+public class Apiv1v3cron implements Job {
     /**
      * Application name.
      */
@@ -91,11 +94,13 @@ public class api_v1_v3_cron implements Job {
     public static JSONArray geodata;
     public static ArrayList<AuditMap> al = new ArrayList<AuditMap>();
     public static Boolean allEmailFromINovus;
+    public final String[] arguments = new String[] {"123"};
+    public static DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:ms");
 
     public static Credential authorize() throws IOException {
         // Load client secrets.
         InputStream in =
-                api_v1_v3_cron.class.getResourceAsStream("/credentials.json");
+                Apiv1v3cron.class.getResourceAsStream("/credentials.json");
         GoogleClientSecrets clientSecrets =
                 GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 
@@ -128,35 +133,35 @@ public class api_v1_v3_cron implements Job {
     }
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
-        System.out.println("kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk");
-        System.out.println("kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk");
-        System.out.println("kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk");
-        System.out.println("kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk");
-        System.out.println("kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk");
-        System.out.println("kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk");
-        try{
+        System.out.println("1111111111111111111111111111111111111111111111111111111111111111");
+        try {
+            System.out.println("start hash= ");
+            TestCheckSum.main(arguments);
             Appsactivity service = getAppsactivityService();
 // папка для мониторинга
-        ListActivitiesResponse result = service.activities().list()
-                .setSource("drive.google.com")
-                .setDriveAncestorId("root")
-                //.setPageSize(111)
-                .execute();
-        List<Activity> activities = result.getActivities();
-        if (activities == null || activities.size() == 0) {
-            System.out.println("No activity.");
-        } else
-            read_activities(activities);
-            System.out.println("ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc");
-            System.out.println("ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc");
-            System.out.println("ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc");
-            System.out.println("ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc");
-        }catch (Exception exec){}
+            ListActivitiesResponse result = service.activities().list()
+                    .setSource("drive.google.com")
+                    .setDriveAncestorId("root")
+                    //.setPageSize(111)
+                    .execute();
+            List<Activity> activities = result.getActivities();
+            if (activities == null || activities.size() == 0) {
+                System.out.println("No activity.");
+            } else {
+                read_activities(activities);
+                System.out.println("222222222222222222222222222222222222222222222222222222222222222222222");
+                System.out.println("end hash");
+                TestCheckSum.main(arguments);
+            }
+
+        } catch (Exception exec) {
+        }
     }
 
     public static void read_activities(List<Activity> activities) {
         System.out.println("Recent activity:");
         System.out.println("STARTsize=" + al.size());
+        System.out.println(dateFormat.format(new Date()));
 
         for (Activity activity : activities) {
             Event event = activity.getCombinedEvent();
@@ -179,19 +184,20 @@ public class api_v1_v3_cron implements Job {
                 String read_editors_str = read_editors(target.getId());
                 // получаем очередную строку, если read_editors содержит что то БЕЗ i-novus, добавляем
                 AuditMap candy = new AuditMap(date, user.getName(), target.getName(), event.getPrimaryEventType(), history, read_editors_str);
-                if (!(al.contains(candy))) {
+               /* if (!(al.contains(candy))) {
                     System.out.println("index candy= " + al.indexOf(candy));
                     System.out.println("adding!");
 //                    System.out.println((date+ user.getName()+ target.getName()+ event.getPrimaryEventType()+ history+ read_editors_str));
                     al.add(new AuditMap(date, user.getName(), target.getName(), event.getPrimaryEventType(), history, read_editors_str));
-                }
+                }*/
             }
             history = historyDel = historyAdd = historyRem = "";
         }
         System.out.println("ENDsize=" + al.size());
         Collections.sort(al);
         write_to_file(al);
-        System.out.println("END");
+        System.out.println(dateFormat.format(new Date()));
+
     }
 
     public static void addedDeletedRemovedPermissions(String evlist_string) {
@@ -219,7 +225,7 @@ public class api_v1_v3_cron implements Job {
         allEmailFromINovus = true;
         try {
             // используем 3 версию rest api чтобы получить пользаков и их роли ( к файлу )
-            Drive driveservice = api_v3.Drive();
+            Drive driveservice = Apiv3.Drive();
             PermissionList permissionList = driveservice.permissions().list(fileid).setPageSize(100).setFields("permissions(id, displayName, emailAddress, role)")
                     .execute();
             List<com.google.api.services.drive.model.Permission> p = permissionList.getPermissions();
@@ -245,7 +251,6 @@ public class api_v1_v3_cron implements Job {
         }
         return his;
     }
-
 
     public static void write_to_file(ArrayList<AuditMap> al) {
         try {
