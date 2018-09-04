@@ -142,7 +142,7 @@ public class Apiv1v3cron implements Job {
             ListActivitiesResponse result = service.activities().list()
                     .setSource("drive.google.com")
                     .setDriveAncestorId("root")
-                    //.setPageSize(111)
+                    .setPageSize(3)
                     .execute();
             List<Activity> activities = result.getActivities();
             if (activities == null || activities.size() == 0) {
@@ -152,11 +152,9 @@ public class Apiv1v3cron implements Job {
                 System.out.println("  end hash== " + TestCheckSum.main(arguments));
                 System.out.println("222222222222222222222222222222222222222222222222222222222222222222222");
             }
-
         } catch (Exception exec) {
         }
         System.out.println(dateFormat.format(new Date()));
-
     }
 
     public static void read_activities(List<Activity> activities) {
@@ -171,34 +169,32 @@ public class Apiv1v3cron implements Job {
             if (user == null || target == null) {
                 continue;
             }
-            String evlist_string = "";
-            //System.out.printf("%s: %s. FILE: %s,  ACTION: %s. GETPERMISSIONCHANGES_JSON %s\n",date, user.getName(), target.getName(), event.getPrimaryEventType(), event.getPermissionChanges());
-
+            System.out.printf("%s: %s. FILE: %s,  ACTION: %s. GETPERMISSIONCHANGES_JSON %s\n", date, user.getName(), target.getName(), event.getPrimaryEventType(), event.getPermissionChanges());
             List<PermissionChange> evlist = event.getPermissionChanges();
+            String evlist_string = "";
             if (!(evlist == null)) {
                 for (PermissionChange permissionChange : evlist) {
                     evlist_string = evlist_string + permissionChange;
                 }
                 addedDeletedRemovedPermissions(evlist_string);
-                // получаем очередную строку, если read_editors содержит что то БЕЗ i-novus, добавляем
-                AuditMap candy = new AuditMap(date, user.getName(), target.getName(), event.getPrimaryEventType(), history, "");
-                if (!(al.contains(candy))) {
-                    System.out.println("adding!");
-                    String read_editors_str = read_editors(target.getId());
-                    candy.setV1_getEditors(read_editors_str);
-                    al.add(candy);
-                }
-                else
-                {
-                    System.out.println("already exists!");
-                }
-            }
-
-            history = historyDel = historyAdd = historyRem = "";
+            } else history = "";
+            // получаем очередную строку, если она НЕ В МАПЕ , добавляем, дополнив getEditors'ом
+            AuditMap candy = new AuditMap(date, user.getName(), target.getName(), event.getPrimaryEventType(), history, "", false);
+            System.out.println(date + user.getName() + target.getName() + event.getPrimaryEventType() + history + allEmailFromINovus);
+            if (!(al.contains(candy))) {
+                System.out.println("adding!");
+                String read_editors_str = read_editors(target.getId());
+                candy.setV1_getEditors(read_editors_str);
+                candy.setAllFromINovus(allEmailFromINovus);
+                al.add(candy);
+            } else
+                System.out.println("already exists!");
         }
+        history = historyDel = historyAdd = historyRem = "";
 
         System.out.println("ENDsize=" + al.size());
         Collections.sort(al);
+        System.out.println("dddddddddddddddd" + al.get(3).getAllFromINovus());
         write_to_file(al);
 
     }
@@ -227,7 +223,6 @@ public class Apiv1v3cron implements Job {
         String s = "";
         allEmailFromINovus = true;
         try {
-            // используем 3 версию rest api чтобы получить пользаков и их роли ( к файлу )
             Drive driveservice = Apiv3.Drive();
             PermissionList permissionList = driveservice.permissions().list(fileid).setPageSize(100).setFields("permissions(id, displayName, emailAddress, role)")
                     .execute();
@@ -279,6 +274,8 @@ public class Apiv1v3cron implements Job {
             cell.setCellValue("Activities");
             cell = dataRow.createCell(5);
             cell.setCellValue("Current rights on file");
+            cell = dataRow.createCell(6);
+            cell.setCellValue("all from i-novus");
             row++;
             for (AuditMap product : al) {
                 dataRow = list.createRow(row);
@@ -294,6 +291,8 @@ public class Apiv1v3cron implements Job {
                 cell.setCellValue(product.getHistory());
                 cell = dataRow.createCell(5);
                 cell.setCellValue(product.getV1_getEditors());
+                cell = dataRow.createCell(6);
+                cell.setCellValue(product.getAllFromINovus().toString());
                 row++;
             }
             wb.write(fileout);

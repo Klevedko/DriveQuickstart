@@ -1,5 +1,4 @@
 package api;
-
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
@@ -13,7 +12,6 @@ import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.appsactivity.Appsactivity;
 import com.google.api.services.appsactivity.AppsactivityScopes;
 import com.google.api.services.appsactivity.model.*;
-import com.google.api.services.appsactivity.model.User;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.PermissionList;
 import map.AuditMap;
@@ -28,10 +26,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.security.GeneralSecurityException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class Apiv1v3 {
+public class Apiv1v3{
     /**
      * Application name.
      */
@@ -72,7 +71,7 @@ public class Apiv1v3 {
             HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
             DATA_STORE_FACTORY = new FileDataStoreFactory(DATA_STORE_DIR);
         } catch (Throwable t) {
-            t.printStackTrace();
+            //t.printStackTrace();
             System.exit(1);
         }
     }
@@ -89,12 +88,13 @@ public class Apiv1v3 {
     public static String historyRem = "";
     public static JSONArray geodata;
     public static ArrayList<AuditMap> al = new ArrayList<AuditMap>();
-    public static Boolean allFromINovus;
+    public static Boolean allEmailFromINovus;
+    public static DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:ms");
 
     public static Credential authorize() throws IOException {
         // Load client secrets.
         InputStream in =
-                Apiv1v3.class.getResourceAsStream("/credentials.json");
+                api.Apiv1v3cron.class.getResourceAsStream("/credentials.json");
         GoogleClientSecrets clientSecrets =
                 GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 
@@ -126,37 +126,44 @@ public class Apiv1v3 {
                 .build();
     }
 
-    public static void main(String[] args) throws IOException, GeneralSecurityException {
-        Appsactivity service = getAppsactivityService();
+    public static void main(String[] args){
+        System.out.println("1111111111111111111111111111111111111111111111111111111111111111");
+        System.out.println(dateFormat.format(new Date()));
+        try {
+            Appsactivity service = getAppsactivityService();
 // папка для мониторинга
-        ListActivitiesResponse result = service.activities().list()
-                .setSource("drive.google.com")
-                .setDriveAncestorId("root")
-                //.setPageSize(111)
-                .execute();
-        List<Activity> activities = result.getActivities();
-        if (activities == null || activities.size() == 0) {
-            System.out.println("No activity.");
-        } else
-            read_activities(activities);
-    }
+            ListActivitiesResponse result = service.activities().list()
+                    .setSource("drive.google.com")
+                    .setDriveAncestorId("root")
+                    //.setPageSize(111)
+                    .execute();
+            List<Activity> activities = result.getActivities();
+            if (activities == null || activities.size() == 0) {
+                System.out.println("No activity.");
+            } else {
+                read_activities(activities);
+                System.out.println("222222222222222222222222222222222222222222222222222222222222222222222");
+            }
 
+        } catch (Exception exec) {
+        }
+        System.out.println(dateFormat.format(new Date()));
+    }
 
     public static void read_activities(List<Activity> activities) {
         System.out.println("Recent activity:");
-
+        System.out.println("STARTsize=" + al.size());
         for (Activity activity : activities) {
             Event event = activity.getCombinedEvent();
             User user = event.getUser();
             Target target = event.getTarget();
-            String date = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(new java.util.Date(event.getEventTimeMillis().longValue()));
+            String date = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(new Date(event.getEventTimeMillis().longValue()));
 
             if (user == null || target == null) {
                 continue;
             }
             String evlist_string = "";
-            System.out.printf("%s: %s. FILE: %s,  ACTION: %s. GETPERMISSIONCHANGES_JSON %s\n",
-                    date, user.getName(), target.getName(), event.getPrimaryEventType(), event.getPermissionChanges());
+            //System.out.printf("%s: %s. FILE: %s,  ACTION: %s. GETPERMISSIONCHANGES_JSON %s\n",date, user.getName(), target.getName(), event.getPrimaryEventType(), event.getPermissionChanges());
 
             List<PermissionChange> evlist = event.getPermissionChanges();
             if (!(evlist == null)) {
@@ -164,17 +171,27 @@ public class Apiv1v3 {
                     evlist_string = evlist_string + permissionChange;
                 }
                 addedDeletedRemovedPermissions(evlist_string);
-                String read_editors_str = read_editors(target.getId());
-                // получаем очередную строку, если read_editors содержит что то БЕЗ i-novus, добавляем
-                AuditMap candy = new AuditMap(date, user.getName(), target.getName(), event.getPrimaryEventType(), history, read_editors_str);
-                if (al.indexOf(candy) == -1 && !allFromINovus) {
-                    al.add(new AuditMap(date, user.getName(), target.getName(), event.getPrimaryEventType(), history, read_editors_str));
+                // получаем очередную строку, если она НЕ В МАПЕ , добавляем, дополнив getEditors'ом
+                AuditMap candy = new AuditMap(date, user.getName(), target.getName(), event.getPrimaryEventType(), history, "", allEmailFromINovus);
+                if (!(al.contains(candy))) {
+                    System.out.println("adding!");
+                    String read_editors_str = read_editors(target.getId());
+                    candy.setV1_getEditors(read_editors_str);
+                    al.add(candy);
+                }
+                else
+                {
+                    System.out.println("already exists!");
                 }
             }
-            clearAll();
+
+            history = historyDel = historyAdd = historyRem = "";
         }
+
+        System.out.println("ENDsize=" + al.size());
         Collections.sort(al);
         write_to_file(al);
+
     }
 
     public static void addedDeletedRemovedPermissions(String evlist_string) {
@@ -199,7 +216,7 @@ public class Apiv1v3 {
 
     public static String read_editors(String fileid) {
         String s = "";
-        allFromINovus = true;
+        allEmailFromINovus = true;
         try {
             // используем 3 версию rest api чтобы получить пользаков и их роли ( к файлу )
             Drive driveservice = Apiv3.Drive();
@@ -210,7 +227,7 @@ public class Apiv1v3 {
                 s += pe.getDisplayName() + " ( " + pe.getEmailAddress() + " ) : " + pe.getRole() + "\n";
                 if (pe.getEmailAddress() != null) {
                     if (!(pe.getEmailAddress().toLowerCase().contains("@i-novus"))) {
-                        allFromINovus = false;
+                        allEmailFromINovus = false;
                     }
                 }
             }
@@ -229,18 +246,11 @@ public class Apiv1v3 {
         return his;
     }
 
-    public static void clearAll() {
-        history = "";
-        historyDel = "";
-        historyAdd = "";
-        historyRem = "";
-    }
-
     public static void write_to_file(ArrayList<AuditMap> al) {
         try {
             HSSFWorkbook wb = new HSSFWorkbook();
             Cell cell;
-            Sheet list = wb.createSheet("SheetName");
+            Sheet list = wb.createSheet("Go");
             byte row = 0;
             String output = "audit_results.xls";
 
@@ -280,6 +290,7 @@ public class Apiv1v3 {
             wb.write(fileout);
             fileout.close();
         } catch (Exception e) {
+            //System.out.println(e.getMessage());
         }
     }
 }

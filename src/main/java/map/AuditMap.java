@@ -10,6 +10,27 @@ public class AuditMap implements Serializable, Comparable<AuditMap> {
     private String eventAction;
     private String history;
     private String v1_getEditors;
+    private Boolean allFromINovus;
+
+    public AuditMap(String date, String name, String target_name, String eventAction, String history, String v1_getEditors, Boolean allFromINovus) {
+        this.date = date;
+        this.name = name;
+        this.target_name = target_name;
+        this.eventAction = eventAction;
+        this.history = history;
+        this.v1_getEditors = v1_getEditors;
+        this.allFromINovus = allFromINovus;
+    }
+
+    @Override
+    public int compareTo(AuditMap o) {
+        int result = this.target_name.compareToIgnoreCase(o.target_name);
+        if (result != 0) {
+            return result;
+        } else {
+            return new String(this.target_name).compareTo(new String(o.target_name));
+        }
+    }
 
     public String getDate() {
         return date;
@@ -59,23 +80,12 @@ public class AuditMap implements Serializable, Comparable<AuditMap> {
         this.v1_getEditors = v1_getEditors;
     }
 
-    public AuditMap(String date, String name, String target_name, String eventAction, String history, String v1_getEditors) {//, String eventID) {
-        this.date = date;
-        this.name = name;
-        this.target_name = target_name;
-        this.eventAction = eventAction;
-        this.history = history;
-        this.v1_getEditors = v1_getEditors;
+    public Boolean getAllFromINovus() {
+        return allFromINovus;
     }
 
-    @Override
-    public int compareTo(AuditMap o) {
-        int result = this.target_name.compareToIgnoreCase(o.target_name);
-        if (result != 0) {
-            return result;
-        } else {
-            return new String(this.target_name).compareTo(new String(o.target_name));
-        }
+    public void setAllFromINovus(Boolean allFromINovus) {
+        this.allFromINovus = allFromINovus;
     }
 
     @Override
