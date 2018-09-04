@@ -4,14 +4,12 @@ import java.io.Serializable;
 
 public class AuditMap implements Serializable, Comparable<AuditMap> {
 
-
     private String date;
     private String name;
     private String target_name;
     private String eventAction;
     private String history;
     private String v1_getEditors;
-
 
     public String getDate() {
         return date;
@@ -62,8 +60,6 @@ public class AuditMap implements Serializable, Comparable<AuditMap> {
     }
 
     public AuditMap(String date, String name, String target_name, String eventAction, String history, String v1_getEditors) {//, String eventID) {
-
-        //this.eventID=eventID;
         this.date = date;
         this.name = name;
         this.target_name = target_name;
@@ -85,8 +81,7 @@ public class AuditMap implements Serializable, Comparable<AuditMap> {
     @Override
     public boolean equals(Object obj) {
         AuditMap that = (AuditMap) obj;
-        if (
-                   !(this.name.equals(that.name))
+        if (!(this.name.equals(that.name))
                 || !(this.target_name.equals(that.target_name))
                 || !(this.date.equals(that.date))
                 || !(this.eventAction.equals(that.eventAction))

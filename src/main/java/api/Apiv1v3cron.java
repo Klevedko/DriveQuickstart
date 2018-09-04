@@ -136,8 +136,7 @@ public class Apiv1v3cron implements Job {
         System.out.println("1111111111111111111111111111111111111111111111111111111111111111");
         System.out.println(dateFormat.format(new Date()));
         try {
-            System.out.println("start hash= ");
-            TestCheckSum.main(arguments);
+            System.out.println("  start hash== " + TestCheckSum.main(arguments));
             Appsactivity service = getAppsactivityService();
 // папка для мониторинга
             ListActivitiesResponse result = service.activities().list()
@@ -150,9 +149,8 @@ public class Apiv1v3cron implements Job {
                 System.out.println("No activity.");
             } else {
                 read_activities(activities);
+                System.out.println("  end hash== " + TestCheckSum.main(arguments));
                 System.out.println("222222222222222222222222222222222222222222222222222222222222222222222");
-                System.out.println("end hash");
-                TestCheckSum.main(arguments);
             }
 
         } catch (Exception exec) {
