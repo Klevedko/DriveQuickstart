@@ -252,7 +252,7 @@ public class Apiv1v3{
             Cell cell;
             Sheet list = wb.createSheet("Go");
             byte row = 0;
-            String output = "audit_results.xls";
+            String output = "audit_results.xlsx";
 
             FileOutputStream fileout;
             fileout = new FileOutputStream(output);

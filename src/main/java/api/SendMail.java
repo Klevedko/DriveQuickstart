@@ -13,12 +13,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class SendMail {
-    public  SendMail() throws MessagingException {
+    public  SendMail(String attentionString) throws MessagingException {
         String host = "smtp.gmail.com";
         String Password = "q21xkr927";
         String from = "akrasilnikov@i-novus.ru";
         String toAddress = "akrasilnikov@i-novus.ru";
-        String filename = "C:/IdeaProjects/DriveQuickstart/audit_results.xls";
+        String filename = "C:/IdeaProjects/DriveQuickstart/audit_results.xlsx";
         // Get system properties
         Properties props = System.getProperties();
         props.put("mail.smtp.host", host);
@@ -31,7 +31,7 @@ public class SendMail {
         message.setRecipients(Message.RecipientType.TO, toAddress);
         message.setSubject("JavaMail Attachment");
         BodyPart messageBodyPart = new MimeBodyPart();
-        messageBodyPart.setText("Here's the file");
+        messageBodyPart.setText("Here's the file\n Внимание на: \n" + attentionString);
         Multipart multipart = new MimeMultipart();
         multipart.addBodyPart(messageBodyPart);
         messageBodyPart = new MimeBodyPart();
@@ -50,9 +50,9 @@ public class SendMail {
             System.out.println(sfe);
         }
     }
-    public static void main(){
+    public static void main(String attentionString){
         try {
-            SendMail sm = new SendMail();
+            SendMail sm = new SendMail(attentionString);
         } catch (MessagingException ex) {
             Logger.getLogger(SendMail.class.getName()).log(Level.SEVERE, null, ex);
         }

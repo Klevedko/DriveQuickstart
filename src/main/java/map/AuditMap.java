@@ -3,6 +3,8 @@ package map;
 import java.io.Serializable;
 
 public class AuditMap implements Serializable, Comparable<AuditMap> {
+    public AuditMap() {
+    }
 
     private String date;
     private String name;
@@ -11,6 +13,8 @@ public class AuditMap implements Serializable, Comparable<AuditMap> {
     private String history;
     private String v1_getEditors;
     private Boolean allFromINovus;
+    private String fileid;
+
 
     public AuditMap(String date, String name, String target_name, String eventAction, String history, String v1_getEditors, Boolean allFromINovus) {
         this.date = date;
@@ -20,6 +24,17 @@ public class AuditMap implements Serializable, Comparable<AuditMap> {
         this.history = history;
         this.v1_getEditors = v1_getEditors;
         this.allFromINovus = allFromINovus;
+    }
+
+    public AuditMap(String date, String name, String target_name, String eventAction, String history, String v1_getEditors, Boolean allFromINovus, String fileid) {
+        this.date = date;
+        this.name = name;
+        this.target_name = target_name;
+        this.eventAction = eventAction;
+        this.history = history;
+        this.v1_getEditors = v1_getEditors;
+        this.allFromINovus = allFromINovus;
+        this.fileid = fileid;
     }
 
     @Override
@@ -86,6 +101,21 @@ public class AuditMap implements Serializable, Comparable<AuditMap> {
 
     public void setAllFromINovus(Boolean allFromINovus) {
         this.allFromINovus = allFromINovus;
+    }
+
+    public String getAll() {
+        return date + name + target_name + eventAction + history + v1_getEditors + allFromINovus;
+    }
+    public String getBody() {
+        String sep="\n";
+        return date + sep + name + sep + target_name + sep + eventAction + sep + history + sep + v1_getEditors;
+    }
+    public String getFileid() {
+        return fileid;
+    }
+
+    public void setFileid(String fileid) {
+        this.fileid = fileid;
     }
 
     @Override

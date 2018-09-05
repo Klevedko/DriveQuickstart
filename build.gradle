@@ -9,7 +9,7 @@ apply plugin: 'application'
 apply plugin: 'maven'
 
 
-mainClassName = 'api_v1_v3'
+mainClassName = 'CronBuild'
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 version = '1.0'
@@ -22,7 +22,7 @@ task fatJar(type: Jar) {
     manifest {
         attributes 'Implementation-Title': 'Gradle Jar File Example',
                 'Implementation-Version': version,
-                'Main-Class': 'api_v1_v3'
+                'Main-Class': 'CronBuild'
     }
     baseName = project.name + '-all'
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
@@ -40,7 +40,10 @@ dependencies {
     compile 'com.google.apis:google-api-services-drive:v3-rev110-1.23.0'
     compile 'com.google.apis:google-api-services-admin-reports:reports_v1-rev46-1.20.0'
     compile 'com.google.apis:google-api-services-appsactivity:v1-rev136-1.23.0'
-    compile 'org.apache.poi:poi:3.9'
+//    compile 'org.apache.poi:poi:3.9'
+    compile group: 'org.apache.poi', name: 'poi-ooxml', version: '3.9'
+//    compile group: 'org.apache.poi', name: 'poi', version: '3.17'
+
     compile 'org.json:json:20160212'
     compile group: 'net.java.dev.jna', name: 'jna-platform', version: '4.2.2'
     compile group: 'org.quartz-scheduler', name: 'quartz', version: '2.2.1'

@@ -11,15 +11,8 @@ import java.util.List;
 public class CronBuild {
     public static void main(String[] args) throws Exception {
 
-        //JobDetail job = new JobDetail();
-        //job.setName("dummyJobName");
-        //job.setJobClass(HelloJob.class);
         JobDetail job = JobBuilder.newJob(Apiv1v3cron.class)
                 .withIdentity("dummyJobName", "group1").build();
-
-        //CronTrigger trigger = new CronTrigger();
-        //trigger.setName("dummyTriggerName");
-        //trigger.setCronExpression("0/5 * * * * ?");
 
         Trigger trigger = TriggerBuilder
                 .newTrigger()

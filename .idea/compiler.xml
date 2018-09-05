@@ -4,6 +4,8 @@
     <bytecodeTargetLevel>
       <module name="api_v1_v3_main" target="1.7" />
       <module name="api_v1_v3_test" target="1.7" />
+      <module name="CronBuild_main" target="1.7" />
+      <module name="CronBuild_test" target="1.7" />
       <module name="DriveQuickstart_main" target="1.7" />
       <module name="DriveQuickstart_test" target="1.7" />
     </bytecodeTargetLevel>

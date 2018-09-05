@@ -1,135 +1,37 @@
 package api;
 
-import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
-import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
-import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
-import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.appsactivity.Appsactivity;
-import com.google.api.services.appsactivity.AppsactivityScopes;
 import com.google.api.services.appsactivity.model.*;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.PermissionList;
 import map.AuditMap;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.quartz.*;
-
 import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class Apiv1v3cron implements Job {
-    /**
-     * Application name.
-     */
-    private static final String APPLICATION_NAME =
-            "G Suite Activity API Java Quickstart";
 
-    /**
-     * Directory to store authorization tokens for this application.
-     */
-    private static final java.io.File DATA_STORE_DIR = new java.io.File("token_v1");
-
-    /**
-     * Global instance of the {@link FileDataStoreFactory}.
-     */
-    private static FileDataStoreFactory DATA_STORE_FACTORY;
-
-    /**
-     * Global instance of the JSON factory.
-     */
-    private static final JsonFactory JSON_FACTORY =
-            JacksonFactory.getDefaultInstance();
-
-    /**
-     * Global instance of the HTTP transport.
-     */
-    private static HttpTransport HTTP_TRANSPORT;
-
-    /**
-     * Global instance of the scopes required by this quickstart.
-     * <p>
-     * If modifying these scopes, delete your previously saved credentials
-     * at ~/.credentials/appsactivity-java-quickstart
-     */
-    private static final List<String> SCOPES = Arrays.asList(AppsactivityScopes.ACTIVITY);
-
-    static {
-        try {
-            HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-            DATA_STORE_FACTORY = new FileDataStoreFactory(DATA_STORE_DIR);
-        } catch (Throwable t) {
-            //t.printStackTrace();
-            System.exit(1);
-        }
-    }
-
-    /**
-     * Creates an authorized Credential object.
-     *
-     * @return an authorized Credential object.
-     * @throws IOException
-     */
     public static String history = "";
     public static String historyAdd = "";
     public static String historyDel = "";
     public static String historyRem = "";
     public static JSONArray geodata;
-    public static ArrayList<AuditMap> al = new ArrayList<AuditMap>();
-    public static Boolean allEmailFromINovus;
+    public static ArrayList<AuditMap> resultMap = new ArrayList<AuditMap>();
     public final String[] arguments = new String[]{"123"};
     public static DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:ms");
-
-    // Переменные для запуска
+    // Переменные для запуска CRON и логики
     public static boolean running = false;
+    public static Boolean allEmailFromINovus;
+    public static boolean needReMap = false;
     public static boolean firstRun = true;
-    public static String starthash = "";
-
-    public static Credential authorize() throws IOException {
-        // Load client secrets.
-        InputStream in =
-                Apiv1v3cron.class.getResourceAsStream("/credentials.json");
-        GoogleClientSecrets clientSecrets =
-                GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
-
-        // Build flow and trigger user authorization request.
-        GoogleAuthorizationCodeFlow flow =
-                new GoogleAuthorizationCodeFlow.Builder(
-                        HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
-                        .setDataStoreFactory(DATA_STORE_FACTORY)
-                        .setAccessType("offline")
-                        .build();
-        Credential credential = new AuthorizationCodeInstalledApp(
-                flow, new LocalServerReceiver()).authorize("akrasilnikov@i-novus.ru");
-        System.out.println(
-                "Credentials saved to " + DATA_STORE_DIR.getAbsolutePath());
-        return credential;
-    }
-
-    /**
-     * Build and return an authorized Apps Activity client service.
-     *
-     * @return an authorized Appsactivity client service
-     * @throws IOException
-     */
-    public static Appsactivity getAppsactivityService() throws IOException {
-        Credential active_credential = authorize();
-        return new Appsactivity.Builder(
-                HTTP_TRANSPORT, JSON_FACTORY, active_credential)
-                .setApplicationName(APPLICATION_NAME)
-                .build();
-    }
+    public static boolean needmail = false;
+    public static String attentionString = "\n";
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
         System.out.println(dateFormat.format(new Date()));
@@ -139,26 +41,29 @@ public class Apiv1v3cron implements Job {
         }
         // запустили
         running = true;
+        needmail = false;
         try {
             System.out.println("11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111");
-            starthash = TestCheckSum.main(arguments);
-            System.out.println("   starthash== " + TestCheckSum.main(arguments));
-            Appsactivity service = getAppsactivityService();
+            Appsactivity service = Apiv1.getAppsactivityService();
 // папка для мониторинга
             ListActivitiesResponse result = service.activities().list()
                     .setSource("drive.google.com")
-                    .setDriveAncestorId("root")
+                    .setDriveAncestorId("root").setPageSize(11)
                     .execute();
             List<Activity> activities = result.getActivities();
             if (activities == null || activities.size() == 0) {
                 System.out.println("No activity.");
             } else {
                 read_activities(activities);
-                System.out.println("  end hash== " + TestCheckSum.main(arguments));
-                if (!firstRun && !starthash.equals(TestCheckSum.main(arguments)))
-                    //SimpleEmail.generateAndSendEmail();
-                    SendMail.main();
-                    System.out.println("22222222222222222222222222222222222222222222222222222222222222222222222222222222");
+                // Если это не первый запуск, и есть новые строки БЕЗ @I-NOVUS!!
+                if (!firstRun && needmail) {
+                    System.out.println("SEND EMAIL");
+                    SendMail.main(attentionString);
+                    attentionString="";
+                }
+                else
+                    System.out.println("we do not need to send email");
+                System.out.println("22222222222222222222222222222222222222222222222222222222222222222222222222222222");
             }
         } catch (Exception exec) {
         }
@@ -168,43 +73,53 @@ public class Apiv1v3cron implements Job {
     }
 
     public static void read_activities(List<Activity> activities) {
+        needReMap = false;
         System.out.println("Recent activity:");
-        System.out.println("STARTsize=" + al.size());
+        System.out.println("STARTsize=" + resultMap.size());
         for (Activity activity : activities) {
-            Event event = activity.getCombinedEvent();
-            User user = event.getUser();
-            Target target = event.getTarget();
-            String date = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(new Date(event.getEventTimeMillis().longValue()));
+            List<Event> eventList = activity.getSingleEvents();
+            for (Event e : eventList) {
 
-            if (user == null || target == null) {
-                continue;
-            }
-            // System.out.printf("%s: %s. FILE: %s,  ACTION: %s. GETPERMISSIONCHANGES_JSON %s\n", date, user.getName(), target.getName(), event.getPrimaryEventType(), event.getPermissionChanges());
-            List<PermissionChange> evlist = event.getPermissionChanges();
-            String evlist_string = "";
-            if (!(evlist == null)) {
-                for (PermissionChange permissionChange : evlist) {
-                    evlist_string = evlist_string + permissionChange;
+                User user = e.getUser();
+                Target target = e.getTarget();
+                String date = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(new Date(e.getEventTimeMillis().longValue()));
+
+                if (user == null || target == null) {
+                    continue;
                 }
-                addedDeletedRemovedPermissions(evlist_string);
-            } else history = "";
-            // получаем очередную строку, если она НЕ В МАПЕ , добавляем, дополнив getEditors'ом
-            AuditMap candy = new AuditMap(date, user.getName(), target.getName(), event.getPrimaryEventType(), history, "", false);
-            //System.out.println(date + user.getName() + target.getName() + event.getPrimaryEventType() + history + allEmailFromINovus);
-            if (!(al.contains(candy))) {
-                System.out.println("adding!");
-                String read_editors_str = read_editors(target.getId());
-                candy.setV1_getEditors(read_editors_str);
-                candy.setAllFromINovus(allEmailFromINovus);
-                al.add(candy);
-            } else
-                System.out.println("already exists!");
-        }
-        history = historyDel = historyAdd = historyRem = "";
+                // System.out.printf("%s: %s. FILE: %s,  ACTION: %s. GETPERMISSIONCHANGES_JSON %s\n", date, user.getName(), target.getName(), event.getPrimaryEventType(), event.getPermissionChanges());
+                List<PermissionChange> evlist = e.getPermissionChanges();
+                String evlist_string = "";
+                if (!(evlist == null)) {
+                    for (PermissionChange permissionChange : evlist) {
+                        evlist_string = evlist_string + permissionChange;
+                    }
+                    addedDeletedRemovedPermissions(evlist_string);
+                } else history = "";
 
-        System.out.println("ENDsize=" + al.size());
-        Collections.sort(al);
-        write_to_file(al);
+                // получаем очередную строку, если она НЕ В МАПЕ , добавляем, дополнив getEditors'ом
+                AuditMap candy = new AuditMap(date, user.getName(), target.getName(), e.getPrimaryEventType(), history, "", false);
+                // Если записи в мапе нет - добавим. При добавлении посмотрим - проблемная ли запись. Если да - Email !
+                if (!(resultMap.contains(candy))) {
+                    System.out.println("adding!");
+                    String read_editors_str = read_editors(target.getId());
+                    candy.setV1_getEditors(read_editors_str);
+                    candy.setAllFromINovus(allEmailFromINovus);
+                    resultMap.add(candy);
+                    needReMap = true;
+                    if(needmail && !firstRun)
+                        attentionString += candy.getBody() + "\n";
+                    //System.out.println("added line = " + candy.getAll());
+
+                } else
+                    System.out.println("already exists!");
+            }
+            history = historyDel = historyAdd = historyRem = "";
+        }
+        Collections.sort(resultMap);
+        System.out.println("ENDsize=" + resultMap.size());
+        if (needReMap)
+            write_to_file(resultMap);
     }
 
     public static void addedDeletedRemovedPermissions(String evlist_string) {
@@ -240,6 +155,7 @@ public class Apiv1v3cron implements Job {
                 if (pe.getEmailAddress() != null) {
                     if (!(pe.getEmailAddress().toLowerCase().contains("@i-novus"))) {
                         allEmailFromINovus = false;
+                        needmail = true;
                     }
                 }
             }
@@ -258,17 +174,20 @@ public class Apiv1v3cron implements Job {
         return his;
     }
 
-    public static void write_to_file(ArrayList<AuditMap> al) {
+    public static void write_to_file(ArrayList<AuditMap> resultMap) {
         try {
-            HSSFWorkbook wb = new HSSFWorkbook();
+            System.out.println("writing to the file....");
+            //HSSFWorkbook wb = new HSSFWorkbook();
+            XSSFWorkbook wb = new XSSFWorkbook();
+            int row = 0;
+
             Cell cell;
+
             Sheet list = wb.createSheet("Go");
-            byte row = 0;
-            String output = "audit_results.xls";
+            String output = "audit_results.xlsx";
 
             FileOutputStream fileout;
             fileout = new FileOutputStream(output);
-
             Row dataRow = list.createRow(row);
             cell = dataRow.createCell(0);
             cell.setCellValue("Date");
@@ -285,7 +204,8 @@ public class Apiv1v3cron implements Job {
             cell = dataRow.createCell(6);
             cell.setCellValue("all from i-novus");
             row++;
-            for (AuditMap product : al) {
+
+            for (AuditMap product : resultMap) {
                 dataRow = list.createRow(row);
                 cell = dataRow.createCell(0);
                 cell.setCellValue(product.getDate());
@@ -306,9 +226,42 @@ public class Apiv1v3cron implements Job {
             wb.write(fileout);
             fileout.close();
         } catch (Exception e) {
-            //System.out.println(e.getMessage());
+            System.out.println(e.getMessage());
+            System.exit(0);
         }
     }
 
+/*
+    public static void read_from_excel_when_start(ArrayList<AuditMap> resultMap) {
+        try {
+            Workbook workbook = WorkbookFactory.create(new File("C:/IdeaProjects/DriveQuickstart/audit_results.xlsx"));
 
+            Sheet sheet = workbook.getSheetAt(0);
+
+            // Create a DataFormatter to format and get each cell's value as String
+            DataFormatter dataFormatter = new DataFormatter();
+
+            // 1. You can obtain a rowIterator and columnIterator and iterate over them
+            System.out.println("\n\nIterating over Rows and Columns using Iterator\n");
+            Iterator<Row> rowIterator = sheet.rowIterator();
+            while (rowIterator.hasNext()) {
+                Row row = rowIterator.next();
+                AuditMap news = new AuditMap();
+                // Now let's iterate over the columns of the current row
+                Iterator<Cell> cellIterator = row.cellIterator();
+
+                while (cellIterator.hasNext()) {
+                    Cell cell = cellIterator.next();
+                    String cellValue = dataFormatter.formatCellValue(cell);
+                    System.out.print(cellValue + "\t");
+                }
+                System.out.println();
+            }
+        } catch (Exception e) {
+
+            System.out.println(e.getMessage());
+            System.exit(0);
+        }
+    }
+*/
 }
