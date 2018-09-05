@@ -64,7 +64,6 @@ public class Apiv3 {
 
     public static void main(String... args) throws IOException, GeneralSecurityException {
         // Build a new authorized API client service.
-
         // Print the names and IDs for up to 10 files.
         FileList result = Drive().files().list()
                 //.setPageSize(10)

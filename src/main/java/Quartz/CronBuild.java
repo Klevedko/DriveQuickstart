@@ -21,7 +21,7 @@ public class CronBuild
 				.newTrigger()
 				.withIdentity("dummyTriggerName", "group1")
 				.withSchedule(
-						CronScheduleBuilder.cronSchedule("1 * * * * ?"))
+						CronScheduleBuilder.cronSchedule("1.3 * * * * ?"))
 				.build();
     	
     	//schedule it

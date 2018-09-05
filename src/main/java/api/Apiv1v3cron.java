@@ -133,7 +133,6 @@ public class Apiv1v3cron implements Job {
     }
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
-        System.out.println("1111111111111111111111111111111111111111111111111111111111111111");
         System.out.println(dateFormat.format(new Date()));
         try {
             System.out.println("  start hash== " + TestCheckSum.main(arguments));
@@ -142,7 +141,7 @@ public class Apiv1v3cron implements Job {
             ListActivitiesResponse result = service.activities().list()
                     .setSource("drive.google.com")
                     .setDriveAncestorId("root")
-                    .setPageSize(3)
+                    //.setPageSize(3)
                     .execute();
             List<Activity> activities = result.getActivities();
             if (activities == null || activities.size() == 0) {
