@@ -34,7 +34,7 @@ public class SimpleEmail {
         getMailSession = Session.getDefaultInstance(mailServerProperties, null);
         generateMailMessage = new MimeMessage(getMailSession);
         generateMailMessage.addRecipient(Message.RecipientType.TO, new InternetAddress("akrasilnikov@i-novus.ru"));
-        generateMailMessage.addRecipient(Message.RecipientType.CC, new InternetAddress("apatronov@i-novus.ru"));
+        //generateMailMessage.addRecipient(Message.RecipientType.CC, new InternetAddress("apatronov@i-novus.ru"));
         generateMailMessage.setSubject("Пожрал?");
         String emailBody = "Test email by JavaMail API example. " + "<br><br> chpok!";
         generateMailMessage.setContent(emailBody, "text/html");

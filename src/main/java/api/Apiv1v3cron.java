@@ -90,7 +90,12 @@ public class Apiv1v3cron implements Job {
     public static Boolean allEmailFromINovus;
     public final String[] arguments = new String[]{"123"};
     public static DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:ms");
-    public static boolean running=false;
+
+    // Переменные для запуска
+    public static boolean running = false;
+    public static boolean firstRun = true;
+    public static String starthash = "";
+
     public static Credential authorize() throws IOException {
         // Load client secrets.
         InputStream in =
@@ -128,17 +133,21 @@ public class Apiv1v3cron implements Job {
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
         System.out.println(dateFormat.format(new Date()));
-        if(running){return;}
-            running=true;
+        // блок для CRON - не запускаем, пока не выполнился предыдущий шаг
+        if (running) {
+            return;
+        }
+        // запустили
+        running = true;
         try {
             System.out.println("11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111");
-            System.out.println("  start hash== " + TestCheckSum.main(arguments));
+            starthash = TestCheckSum.main(arguments);
+            System.out.println("   starthash== " + TestCheckSum.main(arguments));
             Appsactivity service = getAppsactivityService();
 // папка для мониторинга
             ListActivitiesResponse result = service.activities().list()
                     .setSource("drive.google.com")
                     .setDriveAncestorId("root")
-                    //.setPageSize(3)
                     .execute();
             List<Activity> activities = result.getActivities();
             if (activities == null || activities.size() == 0) {
@@ -146,11 +155,16 @@ public class Apiv1v3cron implements Job {
             } else {
                 read_activities(activities);
                 System.out.println("  end hash== " + TestCheckSum.main(arguments));
-                System.out.println("22222222222222222222222222222222222222222222222222222222222222222222222222222222");
+                if (!firstRun && !starthash.equals(TestCheckSum.main(arguments)))
+                    //SimpleEmail.generateAndSendEmail();
+                    SendMail.main();
+                    System.out.println("22222222222222222222222222222222222222222222222222222222222222222222222222222222");
             }
         } catch (Exception exec) {
         }
-        running=false;
+        // Первый step Cron пройден
+        firstRun = false;
+        running = false;
     }
 
     public static void read_activities(List<Activity> activities) {
@@ -165,7 +179,7 @@ public class Apiv1v3cron implements Job {
             if (user == null || target == null) {
                 continue;
             }
-           // System.out.printf("%s: %s. FILE: %s,  ACTION: %s. GETPERMISSIONCHANGES_JSON %s\n", date, user.getName(), target.getName(), event.getPrimaryEventType(), event.getPermissionChanges());
+            // System.out.printf("%s: %s. FILE: %s,  ACTION: %s. GETPERMISSIONCHANGES_JSON %s\n", date, user.getName(), target.getName(), event.getPrimaryEventType(), event.getPermissionChanges());
             List<PermissionChange> evlist = event.getPermissionChanges();
             String evlist_string = "";
             if (!(evlist == null)) {
@@ -191,7 +205,6 @@ public class Apiv1v3cron implements Job {
         System.out.println("ENDsize=" + al.size());
         Collections.sort(al);
         write_to_file(al);
-
     }
 
     public static void addedDeletedRemovedPermissions(String evlist_string) {
