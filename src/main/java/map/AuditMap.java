@@ -4,9 +4,19 @@ import java.io.Serializable;
 
 public class AuditMap implements Serializable, Comparable<AuditMap> {
 
-    public AuditMap(String name, String getOwners) {
+    public AuditMap(String name) {
         this.name = name;
-        this.v3_getOwners =getOwners;
+    }
+
+    public AuditMap(String name, String v3_getOwners) {
+        this.name = name;
+        this.v3_getOwners = v3_getOwners;
+    }
+
+    public AuditMap(String name, String v3_getOwners, Boolean allEmailFromINovus) {
+        this.name = name;
+        this.v3_getOwners = v3_getOwners;
+        this.allEmailFromINovus = allEmailFromINovus;
     }
 
     private String date;
@@ -15,28 +25,28 @@ public class AuditMap implements Serializable, Comparable<AuditMap> {
     private String eventAction;
     private String history;
     private String v3_getOwners;
-    private Boolean allFromINovus;
+    private Boolean allEmailFromINovus;
     private String fileid;
 
 
-    public AuditMap(String date, String name, String target_name, String eventAction, String history, String v3_getOwners, Boolean allFromINovus) {
+    public AuditMap(String date, String name, String target_name, String eventAction, String history, String v3_getOwners, Boolean allEmailFromINovus) {
         this.date = date;
         this.name = name;
         this.target_name = target_name;
         this.eventAction = eventAction;
         this.history = history;
         this.v3_getOwners = v3_getOwners;
-        this.allFromINovus = allFromINovus;
+        this.allEmailFromINovus = allEmailFromINovus;
     }
 
-    public AuditMap(String date, String name, String target_name, String eventAction, String history, String v3_getOwners, Boolean allFromINovus, String fileid) {
+    public AuditMap(String date, String name, String target_name, String eventAction, String history, String v3_getOwners, Boolean allEmailFromINovus, String fileid) {
         this.date = date;
         this.name = name;
         this.target_name = target_name;
         this.eventAction = eventAction;
         this.history = history;
         this.v3_getOwners = v3_getOwners;
-        this.allFromINovus = allFromINovus;
+        this.allEmailFromINovus = allEmailFromINovus;
         this.fileid = fileid;
     }
 
@@ -98,16 +108,16 @@ public class AuditMap implements Serializable, Comparable<AuditMap> {
         this.v3_getOwners = v3_getOwners;
     }
 
-    public Boolean getAllFromINovus() {
-        return allFromINovus;
+    public Boolean getAllEmailFromINovus() {
+        return allEmailFromINovus;
     }
 
-    public void setAllFromINovus(Boolean allFromINovus) {
-        this.allFromINovus = allFromINovus;
+    public void setAllEmailFromINovus(Boolean allEmailFromINovus) {
+        this.allEmailFromINovus = allEmailFromINovus;
     }
 
     public String getAll() {
-        return date + name + target_name + eventAction + history + v3_getOwners + allFromINovus;
+        return date + name + target_name + eventAction + history + v3_getOwners + allEmailFromINovus;
     }
 
     public String getBody() {

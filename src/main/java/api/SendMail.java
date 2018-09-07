@@ -18,7 +18,7 @@ public class SendMail {
         String Password = "q21xkr927";
         String from = "akrasilnikov@i-novus.ru";
         String toAddress = "akrasilnikov@i-novus.ru";
-        String filename = "C:/IdeaProjects/DriveQuickstart/audit_results.xlsx";
+        String filename = "";
         // Get system properties
         Properties props = System.getProperties();
         props.put("mail.smtp.host", host);

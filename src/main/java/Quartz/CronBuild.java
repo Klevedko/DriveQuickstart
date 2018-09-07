@@ -19,7 +19,7 @@ public class CronBuild {
                 .newTrigger()
                 .withIdentity("dummyTriggerName", "group1")
                 .withSchedule(
-                        CronScheduleBuilder.cronSchedule("50 * * * * ?"))
+                        CronScheduleBuilder.cronSchedule("0/22 * * * * ?"))
                 .build();
 
         //schedule it

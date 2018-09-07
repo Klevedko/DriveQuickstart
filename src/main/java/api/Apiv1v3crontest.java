@@ -23,31 +23,15 @@ import java.util.List;
 
 public class Apiv1v3crontest implements Job {
 
-    public static String history = "";
-    public static String historyAdd = "";
-    public static String historyDel = "";
-    public static String historyRem = "";
-    public static JSONArray geodata;
     public static ArrayList<AuditMap> resultMap = new ArrayList<AuditMap>();
-    public final String[] arguments = new String[]{"123"};
     public static DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:ms");
+    public static String resultfile="audit_result_";
     // Переменные для запуска CRON и логики
     public static boolean running = false;
     public static Boolean allEmailFromINovus;
     public static boolean needReMap = false;
-    public static boolean firstRun = true;
     public static boolean needmail = false;
-    public static String attentionString = "\n";
     public static FileList fileList;
-
-    public static FileList drive_v3(String query) {
-        try {
-            Drive driveservice = Apiv3.Drive();
-            return driveservice.files().list().setQ(query).execute();
-        } catch (Exception x) {
-        }
-        return fileList;
-    }
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
         System.out.println(dateFormat.format(new Date()));
@@ -60,17 +44,26 @@ public class Apiv1v3crontest implements Job {
         needmail = false;
         System.out.println("11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111");
         try {
-            String FileId = "0B3jemUSF0v3dSDNya3hZQy1BODQ";
+            String FileId = "1wlyj65snRXW5QXhp5wJD54eUxtZm7CNZ";
             String query = "'" + FileId + "'  in parents and trashed=false";
             FileList fileList = drive_v3(query);
             List<File> activities = fileList.getFiles();
             deeper_in_folders(activities);
-            write_to_file(resultMap);
+
+            SendMail.main(write_to_file(resultMap));
+            // Первый step Cron пройден
+            running = false;
         } catch (Exception exec) {
         }
-        // Первый step Cron пройден
-        firstRun = false;
-        running = false;
+    }
+
+    public static FileList drive_v3(String query) {
+        try {
+            Drive driveservice = Apiv3.Drive();
+            return driveservice.files().list().setQ(query).execute();
+        } catch (Exception x) {
+        }
+        return fileList;
     }
 
     public static void deeper_in_folders(List<File> file) {
@@ -82,7 +75,7 @@ public class Apiv1v3crontest implements Job {
             } catch (Exception ss) {
             }
             System.out.println(f.getName());
-            AuditMap candy = new AuditMap(f.getName(), getOwners(f.getId()));
+            AuditMap candy = new AuditMap(f.getName() , getOwners(f.getId()));
             resultMap.add(candy);
         }
     }
@@ -99,7 +92,6 @@ public class Apiv1v3crontest implements Job {
                 s += pe.getDisplayName() + " ( " + pe.getEmailAddress() + " ) : " + pe.getRole() + "\n";
                 if (pe.getEmailAddress() != null) {
                     if (!(pe.getEmailAddress().toLowerCase().contains("@i-novus"))) {
-                        needmail = true;
                         allEmailFromINovus=false;
                     }
                 }
@@ -110,14 +102,16 @@ public class Apiv1v3crontest implements Job {
         return s;
     }
 
-    public static void write_to_file(ArrayList<AuditMap> resultMap) {
+    public static String write_to_file(ArrayList<AuditMap> resultMap) {
         try {
+            String audit_date= new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+            resultfile=resultfile.concat(audit_date.concat(".xlsx"));
             System.out.println("writing to the file....");
             XSSFWorkbook wb = new XSSFWorkbook();
             int row = 0;
             Cell cell;
             Sheet list = wb.createSheet("Go");
-            String output = "audit_results.xlsx";
+            String output = resultfile;
             FileOutputStream fileout;
             fileout = new FileOutputStream(output);
             Row dataRow = list.createRow(row);
@@ -135,8 +129,6 @@ public class Apiv1v3crontest implements Job {
                 cell.setCellValue(product.getName());
                 cell = dataRow.createCell(1);
                 cell.setCellValue(product.getV3_getOwners());
-                cell = dataRow.createCell(2);
-                cell.setCellValue(product.getAllFromINovus());
                 row++;
             }
             wb.write(fileout);
@@ -145,5 +137,6 @@ public class Apiv1v3crontest implements Job {
             System.out.println(e.getMessage());
             System.exit(0);
         }
+        return resultfile;
     }
 }
