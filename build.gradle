@@ -48,5 +48,6 @@ dependencies {
     compile group: 'net.java.dev.jna', name: 'jna-platform', version: '4.2.2'
     compile group: 'org.quartz-scheduler', name: 'quartz', version: '2.2.1'
     compile group: 'javax.mail', name: 'mail', version: '1.4'
+    compile group: 'com.google.apis', name: 'google-api-services-drive', version: 'v2-rev65-1.13.2-beta'
 
 }

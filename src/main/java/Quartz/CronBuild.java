@@ -1,5 +1,6 @@
 package Quartz;
 
+import api.Apiv1v3crontest;
 import org.quartz.*;
 import org.quartz.impl.QuartzServer;
 import org.quartz.impl.SchedulerRepository;
@@ -11,7 +12,7 @@ import java.util.List;
 public class CronBuild {
     public static void main(String[] args) throws Exception {
 
-        JobDetail job = JobBuilder.newJob(Apiv1v3cron.class)
+        JobDetail job = JobBuilder.newJob(Apiv1v3crontest.class)
                 .withIdentity("dummyJobName", "group1").build();
 
         Trigger trigger = TriggerBuilder
