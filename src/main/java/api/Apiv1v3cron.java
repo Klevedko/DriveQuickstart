@@ -103,7 +103,7 @@ public class Apiv1v3cron implements Job {
                 if (!(resultMap.contains(candy))) {
                     System.out.println("adding!");
                     String read_editors_str = read_editors(target.getId());
-                    candy.setV1_getEditors(read_editors_str);
+                    candy.setV3_getOwners(read_editors_str);
                     candy.setAllFromINovus(allEmailFromINovus);
                     resultMap.add(candy);
                     needReMap = true;
@@ -218,7 +218,7 @@ public class Apiv1v3cron implements Job {
                 cell = dataRow.createCell(4);
                 cell.setCellValue(product.getHistory());
                 cell = dataRow.createCell(5);
-                cell.setCellValue(product.getV1_getEditors());
+                cell.setCellValue(product.getV3_getOwners());
                 cell = dataRow.createCell(6);
                 cell.setCellValue(product.getAllFromINovus().toString());
                 row++;

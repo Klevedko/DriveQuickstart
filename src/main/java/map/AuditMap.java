@@ -4,8 +4,9 @@ import java.io.Serializable;
 
 public class AuditMap implements Serializable, Comparable<AuditMap> {
 
-    public AuditMap(String name) {
+    public AuditMap(String name, String getOwners) {
         this.name = name;
+        this.v3_getOwners =getOwners;
     }
 
     private String date;
@@ -13,28 +14,28 @@ public class AuditMap implements Serializable, Comparable<AuditMap> {
     private String target_name;
     private String eventAction;
     private String history;
-    private String v1_getEditors;
+    private String v3_getOwners;
     private Boolean allFromINovus;
     private String fileid;
 
 
-    public AuditMap(String date, String name, String target_name, String eventAction, String history, String v1_getEditors, Boolean allFromINovus) {
+    public AuditMap(String date, String name, String target_name, String eventAction, String history, String v3_getOwners, Boolean allFromINovus) {
         this.date = date;
         this.name = name;
         this.target_name = target_name;
         this.eventAction = eventAction;
         this.history = history;
-        this.v1_getEditors = v1_getEditors;
+        this.v3_getOwners = v3_getOwners;
         this.allFromINovus = allFromINovus;
     }
 
-    public AuditMap(String date, String name, String target_name, String eventAction, String history, String v1_getEditors, Boolean allFromINovus, String fileid) {
+    public AuditMap(String date, String name, String target_name, String eventAction, String history, String v3_getOwners, Boolean allFromINovus, String fileid) {
         this.date = date;
         this.name = name;
         this.target_name = target_name;
         this.eventAction = eventAction;
         this.history = history;
-        this.v1_getEditors = v1_getEditors;
+        this.v3_getOwners = v3_getOwners;
         this.allFromINovus = allFromINovus;
         this.fileid = fileid;
     }
@@ -89,12 +90,12 @@ public class AuditMap implements Serializable, Comparable<AuditMap> {
         this.history = history;
     }
 
-    public String getV1_getEditors() {
-        return v1_getEditors;
+    public String getV3_getOwners() {
+        return v3_getOwners;
     }
 
-    public void setV1_getEditors(String v1_getEditors) {
-        this.v1_getEditors = v1_getEditors;
+    public void setV3_getOwners(String v3_getOwners) {
+        this.v3_getOwners = v3_getOwners;
     }
 
     public Boolean getAllFromINovus() {
@@ -106,12 +107,12 @@ public class AuditMap implements Serializable, Comparable<AuditMap> {
     }
 
     public String getAll() {
-        return date + name + target_name + eventAction + history + v1_getEditors + allFromINovus;
+        return date + name + target_name + eventAction + history + v3_getOwners + allFromINovus;
     }
 
     public String getBody() {
         String sep = "\n";
-        return date + sep + name + sep + target_name + sep + eventAction + sep + history + sep + v1_getEditors;
+        return date + sep + name + sep + target_name + sep + eventAction + sep + history + sep + v3_getOwners;
     }
 
     public String getFileid() {

@@ -176,7 +176,7 @@ public class Apiv1v3{
                 if (!(al.contains(candy))) {
                     System.out.println("adding!");
                     String read_editors_str = read_editors(target.getId());
-                    candy.setV1_getEditors(read_editors_str);
+                    candy.setV3_getOwners(read_editors_str);
                     al.add(candy);
                 }
                 else
@@ -284,7 +284,7 @@ public class Apiv1v3{
                 cell = dataRow.createCell(4);
                 cell.setCellValue(product.getHistory());
                 cell = dataRow.createCell(5);
-                cell.setCellValue(product.getV1_getEditors());
+                cell.setCellValue(product.getV3_getOwners());
                 row++;
             }
             wb.write(fileout);

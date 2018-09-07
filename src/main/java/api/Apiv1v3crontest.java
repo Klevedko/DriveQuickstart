@@ -3,6 +3,7 @@ package api;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
+import com.google.api.services.drive.model.PermissionList;
 import map.AuditMap;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -39,7 +40,7 @@ public class Apiv1v3crontest implements Job {
     public static String attentionString = "\n";
     public static FileList fileList;
 
-    public static FileList drive_v2(String query) {
+    public static FileList drive_v3(String query) {
         try {
             Drive driveservice = Apiv3.Drive();
             return driveservice.files().list().setQ(query).execute();
@@ -59,9 +60,9 @@ public class Apiv1v3crontest implements Job {
         needmail = false;
         System.out.println("11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111");
         try {
-            String FileId = "1tP-IDq3DksMYA1HPMuubADEllTxCQ04j";
+            String FileId = "0B3jemUSF0v3dSDNya3hZQy1BODQ";
             String query = "'" + FileId + "'  in parents and trashed=false";
-            FileList fileList = drive_v2(query);
+            FileList fileList = drive_v3(query);
             List<File> activities = fileList.getFiles();
             deeper_in_folders(activities);
             write_to_file(resultMap);
@@ -76,14 +77,37 @@ public class Apiv1v3crontest implements Job {
         needReMap = false;
         for (File f : file) {
             try {
-                String query2 = "'" + f.getId() + "'  in parents and trashed=false";
-                deeper_in_folders(drive_v2(query2).getFiles());
+                String querry_deeper = "'" + f.getId() + "'  in parents and trashed=false";
+                deeper_in_folders(drive_v3(querry_deeper).getFiles());
             } catch (Exception ss) {
             }
             System.out.println(f.getName());
-            AuditMap candy = new AuditMap(f.getName());
+            AuditMap candy = new AuditMap(f.getName(), getOwners(f.getId()));
             resultMap.add(candy);
         }
+    }
+
+    public static String getOwners(String fileid) {
+        String s = "";
+        allEmailFromINovus = true;
+        try {
+            Drive driveservice = Apiv3.Drive();
+            PermissionList permissionList = driveservice.permissions().list(fileid).setFields("permissions(id, displayName, emailAddress, role)")
+                    .execute();
+            List<com.google.api.services.drive.model.Permission> p = permissionList.getPermissions();
+            for (com.google.api.services.drive.model.Permission pe : p) {
+                s += pe.getDisplayName() + " ( " + pe.getEmailAddress() + " ) : " + pe.getRole() + "\n";
+                if (pe.getEmailAddress() != null) {
+                    if (!(pe.getEmailAddress().toLowerCase().contains("@i-novus"))) {
+                        needmail = true;
+                        allEmailFromINovus=false;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("=====" + e.getMessage() + e.getLocalizedMessage());
+        }
+        return s;
     }
 
     public static void write_to_file(ArrayList<AuditMap> resultMap) {
@@ -98,18 +122,10 @@ public class Apiv1v3crontest implements Job {
             fileout = new FileOutputStream(output);
             Row dataRow = list.createRow(row);
             cell = dataRow.createCell(0);
-            cell.setCellValue("Date");
-            cell = dataRow.createCell(1);
-            cell.setCellValue("Who");
-            cell = dataRow.createCell(2);
             cell.setCellValue("File");
-            cell = dataRow.createCell(3);
-            cell.setCellValue("Action");
-            cell = dataRow.createCell(4);
-            cell.setCellValue("Activities");
-            cell = dataRow.createCell(5);
+            cell = dataRow.createCell(1);
             cell.setCellValue("Current rights on file");
-            cell = dataRow.createCell(6);
+            cell = dataRow.createCell(2);
             cell.setCellValue("all from i-novus");
             row++;
 
@@ -117,6 +133,10 @@ public class Apiv1v3crontest implements Job {
                 dataRow = list.createRow(row);
                 cell = dataRow.createCell(0);
                 cell.setCellValue(product.getName());
+                cell = dataRow.createCell(1);
+                cell.setCellValue(product.getV3_getOwners());
+                cell = dataRow.createCell(2);
+                cell.setCellValue(product.getAllFromINovus());
                 row++;
             }
             wb.write(fileout);
@@ -126,38 +146,4 @@ public class Apiv1v3crontest implements Job {
             System.exit(0);
         }
     }
-
-/*
-    public static void read_from_excel_when_start(ArrayList<AuditMap> resultMap) {
-        try {
-            Workbook workbook = WorkbookFactory.create(new File("C:/IdeaProjects/DriveQuickstart/audit_results.xlsx"));
-
-            Sheet sheet = workbook.getSheetAt(0);
-
-            // Create a DataFormatter to format and get each cell's value as String
-            DataFormatter dataFormatter = new DataFormatter();
-
-            // 1. You can obtain a rowIterator and columnIterator and iterate over them
-            System.out.println("\n\nIterating over Rows and Columns using Iterator\n");
-            Iterator<Row> rowIterator = sheet.rowIterator();
-            while (rowIterator.hasNext()) {
-                Row row = rowIterator.next();
-                AuditMap news = new AuditMap();
-                // Now let's iterate over the columns of the current row
-                Iterator<Cell> cellIterator = row.cellIterator();
-
-                while (cellIterator.hasNext()) {
-                    Cell cell = cellIterator.next();
-                    String cellValue = dataFormatter.formatCellValue(cell);
-                    System.out.print(cellValue + "\t");
-                }
-                System.out.println();
-            }
-        } catch (Exception e) {
-
-            System.out.println(e.getMessage());
-            System.exit(0);
-        }
-    }
-*/
 }
