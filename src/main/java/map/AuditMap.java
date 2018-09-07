@@ -3,7 +3,9 @@ package map;
 import java.io.Serializable;
 
 public class AuditMap implements Serializable, Comparable<AuditMap> {
-    public AuditMap() {
+
+    public AuditMap(String name) {
+        this.name = name;
     }
 
     private String date;
@@ -106,10 +108,12 @@ public class AuditMap implements Serializable, Comparable<AuditMap> {
     public String getAll() {
         return date + name + target_name + eventAction + history + v1_getEditors + allFromINovus;
     }
+
     public String getBody() {
-        String sep="\n";
+        String sep = "\n";
         return date + sep + name + sep + target_name + sep + eventAction + sep + history + sep + v1_getEditors;
     }
+
     public String getFileid() {
         return fileid;
     }
