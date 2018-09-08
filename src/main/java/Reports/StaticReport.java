@@ -25,13 +25,16 @@ import java.util.List;
 public class StaticReport implements Job {
 
     public static ArrayList<AuditMap> resultMap = new ArrayList<AuditMap>();
-    public static String resultfiletemplate="audit_result_";
-    public static String resultfile="";
+    public static String resultfiletemplate = "audit_result_";
+    public static String resultfile = "";
     // Переменные для запуска CRON и логики
     public static boolean running = false;
     public static Boolean allEmailFromINovus;
     public static boolean needReMap = false;
     public static FileList fileList;
+    public static String owners = "";
+    public static String querry_deeper = "";
+    public static Drive driveservice;
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
         // блок для CRON - не запускаем, пока не выполнился предыдущий шаг
@@ -42,24 +45,24 @@ public class StaticReport implements Job {
         running = true;
         System.out.println("11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111");
         try {
+            driveservice = Apiv3.Drive();
             String FileId = "0B3jemUSF0v3dYTZEdkNKSmkzXzg";
             String query = "'" + FileId + "'  in parents and trashed=false";
-            FileList fileList = drive_v3(query);
+            FileList fileList = get_driveservice_v3_files(query);
             List<File> activities = fileList.getFiles();
             deeper_in_folders(activities);
             write_to_file(resultMap);
             String WebViewLink = CreateGoogleFile.main(resultfile);
-            SendMail.main(resultfile,WebViewLink);
+            SendMail.main(resultfile, WebViewLink);
 
             // Первый step Cron пройден
-            running = false;
+            // running = false;
         } catch (Exception exec) {
         }
     }
 
-    public static FileList drive_v3(String query) {
+    public static FileList get_driveservice_v3_files(String query) {
         try {
-            Drive driveservice = Apiv3.Drive();
             return driveservice.files().list().setQ(query).setFields("nextPageToken, files(id, name, owners, parents, webContentLink, webViewLink)").execute();
         } catch (Exception x) {
         }
@@ -70,14 +73,15 @@ public class StaticReport implements Job {
         needReMap = false;
         for (File f : file) {
             try {
-                String querry_deeper = "'" + f.getId() + "'  in parents and trashed=false";
-                deeper_in_folders(drive_v3(querry_deeper).getFiles());
+                System.out.println(f.getName());
+                owners = getOwners(f.getId());
+                if (!allEmailFromINovus) {
+                    AuditMap candy = new AuditMap(f.getName(), f.getWebViewLink(), owners, allEmailFromINovus);
+                    resultMap.add(candy);
+                }
+                querry_deeper = "'" + f.getId() + "'  in parents and trashed=false";
+                deeper_in_folders(get_driveservice_v3_files(querry_deeper).getFiles());
             } catch (Exception ss) {
-            }
-            System.out.println(f.getName());
-            if(allEmailFromINovus){
-                AuditMap candy = new AuditMap(f.getName() , f.getWebViewLink(),getOwners(f.getId()), allEmailFromINovus);
-                resultMap.add(candy);
             }
         }
     }
@@ -86,7 +90,6 @@ public class StaticReport implements Job {
         String ownersList = "";
         allEmailFromINovus = true;
         try {
-            Drive driveservice = Apiv3.Drive();
             PermissionList permissionList = driveservice.permissions().list(fileid).setFields("permissions(id, displayName, emailAddress, role)")
                     .execute();
             List<com.google.api.services.drive.model.Permission> p = permissionList.getPermissions();
@@ -94,7 +97,7 @@ public class StaticReport implements Job {
                 ownersList += pe.getDisplayName() + " ( " + pe.getEmailAddress() + " ) : " + pe.getRole() + "\n";
                 if (pe.getEmailAddress() != null) {
                     if (!(pe.getEmailAddress().toLowerCase().contains("@i-novus"))) {
-                        allEmailFromINovus=false;
+                        allEmailFromINovus = false;
                     }
                 }
             }
@@ -106,8 +109,8 @@ public class StaticReport implements Job {
 
     public static void write_to_file(ArrayList<AuditMap> resultMap) {
         try {
-            String audit_date= new SimpleDateFormat("dd-MM-yyyy").format(new Date());
-            resultfile=resultfiletemplate.concat(audit_date.concat(".xlsx"));
+            String audit_date = new SimpleDateFormat("dd-MM-yyyy").format(new Date());
+            resultfile = resultfiletemplate.concat(audit_date.concat(".xlsx"));
             System.out.println("writing to the file....");
             XSSFWorkbook wb = new XSSFWorkbook();
             int row = 0;
