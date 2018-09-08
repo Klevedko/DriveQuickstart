@@ -42,7 +42,7 @@ public class StaticReport implements Job {
         running = true;
         System.out.println("11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111");
         try {
-            String FileId = "1wlyj65snRXW5QXhp5wJD54eUxtZm7CNZ";
+            String FileId = "0B3jemUSF0v3dYTZEdkNKSmkzXzg";
             String query = "'" + FileId + "'  in parents and trashed=false";
             FileList fileList = drive_v3(query);
             List<File> activities = fileList.getFiles();
@@ -75,8 +75,10 @@ public class StaticReport implements Job {
             } catch (Exception ss) {
             }
             System.out.println(f.getName());
-            AuditMap candy = new AuditMap(f.getName() , f.getWebViewLink(),getOwners(f.getId()));
-            resultMap.add(candy);
+            if(allEmailFromINovus){
+                AuditMap candy = new AuditMap(f.getName() , f.getWebViewLink(),getOwners(f.getId()), allEmailFromINovus);
+                resultMap.add(candy);
+            }
         }
     }
 
@@ -133,6 +135,8 @@ public class StaticReport implements Job {
                 cell.setCellValue(product.getWebViewLink());
                 cell = dataRow.createCell(2);
                 cell.setCellValue(product.getV3_getOwners());
+                cell = dataRow.createCell(3);
+                cell.setCellValue(product.getAllEmailFromINovus().toString());
                 row++;
             }
             wb.write(fileout);

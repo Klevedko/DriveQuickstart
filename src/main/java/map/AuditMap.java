@@ -5,7 +5,6 @@ import java.io.Serializable;
 public class AuditMap implements Serializable, Comparable<AuditMap> {
 
 
-
     private String date;
     private String name;
     private String webViewLink;
@@ -20,10 +19,12 @@ public class AuditMap implements Serializable, Comparable<AuditMap> {
         this.name = name;
     }
 
-    public AuditMap(String name, String webViewLink, String v3_getOwners) {
+    public AuditMap(String name, String webViewLink, String v3_getOwners, Boolean allEmailFromINovus) {
         this.name = name;
-this.webViewLink = webViewLink;
+        this.webViewLink = webViewLink;
         this.v3_getOwners = v3_getOwners;
+        this.allEmailFromINovus = allEmailFromINovus;
+
     }
 
     public AuditMap(String name, String v3_getOwners, Boolean allEmailFromINovus) {
@@ -31,6 +32,7 @@ this.webViewLink = webViewLink;
         this.v3_getOwners = v3_getOwners;
         this.allEmailFromINovus = allEmailFromINovus;
     }
+
     public AuditMap(String date, String name, String target_name, String eventAction, String history, String v3_getOwners, Boolean allEmailFromINovus) {
         this.date = date;
         this.name = name;
