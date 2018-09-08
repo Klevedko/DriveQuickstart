@@ -1,4 +1,5 @@
 package api;
+import Reports.DynamicReport;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
@@ -94,7 +95,7 @@ public class Apiv1v3{
     public static Credential authorize() throws IOException {
         // Load client secrets.
         InputStream in =
-                api.Apiv1v3cron.class.getResourceAsStream("/credentials.json");
+                DynamicReport.class.getResourceAsStream("/credentials.json");
         GoogleClientSecrets clientSecrets =
                 GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 

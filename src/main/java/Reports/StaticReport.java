@@ -25,7 +25,7 @@ import java.util.List;
 public class StaticReport implements Job {
 
     public static ArrayList<AuditMap> resultMap = new ArrayList<AuditMap>();
-    public static String resultfiletemplate = "audit_result_";
+    public static String resultfiletemplate = "Static_audit_result_";
     public static String resultfile = "";
     // Переменные для запуска CRON и логики
     public static boolean running = false;
@@ -35,6 +35,12 @@ public class StaticReport implements Job {
     public static String owners = "";
     public static String querry_deeper = "";
     public static Drive driveservice;
+    static {
+        try {
+            driveservice = Apiv3.Drive();
+        } catch (Exception e) {
+        }
+    }
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
         // блок для CRON - не запускаем, пока не выполнился предыдущий шаг
@@ -45,7 +51,6 @@ public class StaticReport implements Job {
         running = true;
         System.out.println("11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111");
         try {
-            driveservice = Apiv3.Drive();
             String FileId = "0B3jemUSF0v3dYTZEdkNKSmkzXzg";
             String query = "'" + FileId + "'  in parents and trashed=false";
             FileList fileList = get_driveservice_v3_files(query);
@@ -54,7 +59,6 @@ public class StaticReport implements Job {
             write_to_file(resultMap);
             String WebViewLink = CreateGoogleFile.main(resultfile);
             SendMail.main(resultfile, WebViewLink);
-
             // Первый step Cron пройден
             // running = false;
         } catch (Exception exec) {

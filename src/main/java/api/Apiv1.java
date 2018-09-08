@@ -1,5 +1,6 @@
 package api;
 
+import Reports.DynamicReport;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
@@ -12,20 +13,8 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.appsactivity.Appsactivity;
 import com.google.api.services.appsactivity.AppsactivityScopes;
-import com.google.api.services.appsactivity.model.*;
-import com.google.api.services.drive.Drive;
-import com.google.api.services.drive.model.PermissionList;
-import map.AuditMap;
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.quartz.*;
 
 import java.io.*;
-import java.sql.ResultSet;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class Apiv1 {
@@ -83,7 +72,7 @@ public class Apiv1 {
     public static Credential authorize() throws IOException {
         // Load client secrets.
         InputStream in =
-                api.Apiv1v3cron.class.getResourceAsStream("/credentials.json");
+                DynamicReport.class.getResourceAsStream("/credentials.json");
         GoogleClientSecrets clientSecrets =
                 GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 

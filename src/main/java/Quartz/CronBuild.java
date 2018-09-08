@@ -1,13 +1,13 @@
 package Quartz;
 
-import Reports.StaticReport;
+import Reports.DynamicReport;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 
 public class CronBuild {
     public static void main(String[] args) throws Exception {
 
-        JobDetail job = JobBuilder.newJob(StaticReport.class)
+        JobDetail job = JobBuilder.newJob(DynamicReport.class)
                 .withIdentity("dummyJobName", "group1").build();
 
         Trigger trigger = TriggerBuilder
