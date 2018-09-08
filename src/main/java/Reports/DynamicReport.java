@@ -27,16 +27,16 @@ public class DynamicReport implements Job {
     public static JSONArray geodata;
     public static String resultfiletemplate = "Dynamic_audit_result_";
     public static String resultfile = "";
-
+    public static String owners_string = "";
     public static ArrayList<AuditMap> resultMap = new ArrayList<AuditMap>();
-    public final String[] arguments = new String[]{"123"};
     public static DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:ms");
     // Переменные для запуска CRON и логики
-    public static boolean running = false;
     public static Boolean allEmailFromINovus;
     public static boolean needReMap = false;
+    public static boolean running = false;
     public static boolean firstRun = true;
     public static boolean needmail = false;
+
     public static String attentionString = "\n";
     public static String evlist_string = "";
     public static Drive driveservice;
@@ -118,12 +118,11 @@ public class DynamicReport implements Job {
 
                 // получаем очередную строку activity, и если она НЕ В МАПЕ , добавляем, дополнив getEditors'ом
                 AuditMap candy = new AuditMap(date, user.getName(), target.getName(), e.getPrimaryEventType(), history, "", false);
-                // Если записи в мапе нет - добавим. При добавлении посмотрим - проблемная ли запись. Если да - Email !
-                if (!(resultMap.contains(candy))) {
-                    System.out.println("adding!");
-
-                    String read_editors_str = read_editors(target.getId());
-                    candy.setV3_getOwners(read_editors_str);
+                // Если записи в мапе нет - добавим. перед добавлением посмотрим - проблемная ли запись.
+                owners_string = read_editors(target.getId());
+                if (!(resultMap.contains(candy)) && !allEmailFromINovus) {
+                    System.out.println("adding bad event !!");
+                    candy.setV3_owners(owners_string);
                     candy.setAllEmailFromINovus(allEmailFromINovus);
                     resultMap.add(candy);
                     needReMap = true;
@@ -238,7 +237,7 @@ public class DynamicReport implements Job {
                 cell = dataRow.createCell(4);
                 cell.setCellValue(product.getHistory());
                 cell = dataRow.createCell(5);
-                cell.setCellValue(product.getV3_getOwners());
+                cell.setCellValue(product.getV3_owners());
                 cell = dataRow.createCell(6);
                 cell.setCellValue(product.getAllEmailFromINovus().toString());
                 row++;

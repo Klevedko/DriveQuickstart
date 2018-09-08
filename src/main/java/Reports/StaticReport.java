@@ -141,7 +141,7 @@ public class StaticReport implements Job {
                 cell = dataRow.createCell(1);
                 cell.setCellValue(product.getWebViewLink());
                 cell = dataRow.createCell(2);
-                cell.setCellValue(product.getV3_getOwners());
+                cell.setCellValue(product.getV3_owners());
                 cell = dataRow.createCell(3);
                 cell.setCellValue(product.getAllEmailFromINovus().toString());
                 row++;

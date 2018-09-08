@@ -1,6 +1,7 @@
 package Quartz;
 
 import Reports.DynamicReport;
+import Reports.StaticReport;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 
