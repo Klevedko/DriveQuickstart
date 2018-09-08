@@ -58,7 +58,7 @@ public class Apiv1v3cron implements Job {
                 // Если это не первый запуск, и есть новые строки БЕЗ @I-NOVUS!!
                 if (!firstRun && needmail) {
                     System.out.println("SEND EMAIL");
-                    SendMail.main(attentionString);
+                    //SendMail.main(attentionString);
                     attentionString="";
                 }
                 else

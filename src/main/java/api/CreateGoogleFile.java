@@ -57,14 +57,15 @@ public class CreateGoogleFile {
         return _createGoogleFile(googleFolderIdParent, contentType, customFileName, uploadStreamContent);
     }
 
-    public static void main(String[] args) throws IOException {
-        java.io.File uploadFile = new java.io.File("audit_results.xls");
+    public static String main(String args) throws IOException {
+        java.io.File uploadFile = new java.io.File(args);
         // Create  File:
-        File googleFile = createGoogleFile(null,"/ODS", "audit_results.xls", uploadFile);
+        File googleFile = createGoogleFile("1eHmvAPbDDGubIj3VvlmFcm7W65A1deAh","/ODS", args, uploadFile);
         System.out.println("Created Google file!");
         System.out.println("WebContentLink: " + googleFile.getWebContentLink() );
         System.out.println("WebViewLink: " + googleFile.getWebViewLink() );
         System.out.println("Done!");
+        return googleFile.getWebContentLink();
     }
 
 }

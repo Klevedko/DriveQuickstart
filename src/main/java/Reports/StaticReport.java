@@ -1,5 +1,8 @@
-package api;
+package Reports;
 
+import api.Apiv3;
+import api.CreateGoogleFile;
+import api.SendMail;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
@@ -9,23 +12,21 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.json.JSONArray;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
 import java.io.FileOutputStream;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class Apiv1v3crontest implements Job {
+public class StaticReport implements Job {
 
     public static ArrayList<AuditMap> resultMap = new ArrayList<AuditMap>();
-    public static DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:ms");
-    public static String resultfile="audit_result_";
+    public static String resultfiletemplate="audit_result_";
+    public static String resultfile="";
     // Переменные для запуска CRON и логики
     public static boolean running = false;
     public static Boolean allEmailFromINovus;
@@ -34,7 +35,6 @@ public class Apiv1v3crontest implements Job {
     public static FileList fileList;
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
-        System.out.println(dateFormat.format(new Date()));
         // блок для CRON - не запускаем, пока не выполнился предыдущий шаг
         if (running) {
             return;
@@ -44,13 +44,15 @@ public class Apiv1v3crontest implements Job {
         needmail = false;
         System.out.println("11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111");
         try {
-            String FileId = "1wlyj65snRXW5QXhp5wJD54eUxtZm7CNZ";
+            String FileId = "1LR-gffElJbKDmUeZUDOZpTwjbD19odNq";
             String query = "'" + FileId + "'  in parents and trashed=false";
             FileList fileList = drive_v3(query);
             List<File> activities = fileList.getFiles();
             deeper_in_folders(activities);
+            write_to_file(resultMap);
+            String getWebContentLink = CreateGoogleFile.main(resultfile);
+            SendMail.main(resultfile,getWebContentLink);
 
-            SendMail.main(write_to_file(resultMap));
             // Первый step Cron пройден
             running = false;
         } catch (Exception exec) {
@@ -102,10 +104,10 @@ public class Apiv1v3crontest implements Job {
         return s;
     }
 
-    public static String write_to_file(ArrayList<AuditMap> resultMap) {
+    public static void write_to_file(ArrayList<AuditMap> resultMap) {
         try {
-            String audit_date= new SimpleDateFormat("yyyy-MM-dd").format(new Date());
-            resultfile=resultfile.concat(audit_date.concat(".xlsx"));
+            String audit_date= new SimpleDateFormat("dd-MM-yyyy").format(new Date());
+            resultfile=resultfiletemplate.concat(audit_date.concat(".xlsx"));
             System.out.println("writing to the file....");
             XSSFWorkbook wb = new XSSFWorkbook();
             int row = 0;
@@ -137,6 +139,5 @@ public class Apiv1v3crontest implements Job {
             System.out.println(e.getMessage());
             System.exit(0);
         }
-        return resultfile;
     }
 }

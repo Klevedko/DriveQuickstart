@@ -13,12 +13,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class SendMail {
-    public  SendMail(String attentionString) throws MessagingException {
+    public  SendMail(String filetoload, String getWebContentLink) throws MessagingException {
         String host = "smtp.gmail.com";
         String Password = "q21xkr927";
         String from = "akrasilnikov@i-novus.ru";
         String toAddress = "akrasilnikov@i-novus.ru";
-        String filename = "";
+        //String filename = filetoload;
         // Get system properties
         Properties props = System.getProperties();
         props.put("mail.smtp.host", host);
@@ -31,14 +31,14 @@ public class SendMail {
         message.setRecipients(Message.RecipientType.TO, toAddress);
         message.setSubject("JavaMail Attachment");
         BodyPart messageBodyPart = new MimeBodyPart();
-        messageBodyPart.setText("Here's the file\n Внимание на: \n" + attentionString);
+        messageBodyPart.setText("Here's the file\n " + getWebContentLink);
         Multipart multipart = new MimeMultipart();
         multipart.addBodyPart(messageBodyPart);
         messageBodyPart = new MimeBodyPart();
-        DataSource source = new FileDataSource(filename);
-        messageBodyPart.setDataHandler(new DataHandler(source));
-        messageBodyPart.setFileName(filename);
-        multipart.addBodyPart(messageBodyPart);
+        //DataSource source = new FileDataSource(filename);
+        //messageBodyPart.setDataHandler(new DataHandler(source));
+        //messageBodyPart.setFileName(filename);
+        //multipart.addBodyPart(messageBodyPart);
         message.setContent(multipart);
         try {
             Transport tr = session.getTransport("smtps");
@@ -50,9 +50,9 @@ public class SendMail {
             System.out.println(sfe);
         }
     }
-    public static void main(String attentionString){
+    public static void main(String file_to_upload, String getWebContentLink){
         try {
-            SendMail sm = new SendMail(attentionString);
+            SendMail sm = new SendMail(file_to_upload,getWebContentLink);
         } catch (MessagingException ex) {
             Logger.getLogger(SendMail.class.getName()).log(Level.SEVERE, null, ex);
         }
