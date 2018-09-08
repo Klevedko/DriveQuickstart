@@ -65,7 +65,7 @@ public class CreateGoogleFile {
         System.out.println("WebContentLink: " + googleFile.getWebContentLink() );
         System.out.println("WebViewLink: " + googleFile.getWebViewLink() );
         System.out.println("Done!");
-        return googleFile.getWebContentLink();
+        return googleFile.getWebViewLink();
     }
 
 }

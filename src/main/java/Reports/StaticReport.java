@@ -31,7 +31,6 @@ public class StaticReport implements Job {
     public static boolean running = false;
     public static Boolean allEmailFromINovus;
     public static boolean needReMap = false;
-    public static boolean needmail = false;
     public static FileList fileList;
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
@@ -41,17 +40,16 @@ public class StaticReport implements Job {
         }
         // запустили
         running = true;
-        needmail = false;
         System.out.println("11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111");
         try {
-            String FileId = "1LR-gffElJbKDmUeZUDOZpTwjbD19odNq";
+            String FileId = "0B3jemUSF0v3dUDdJaU1YN2RBdmc";
             String query = "'" + FileId + "'  in parents and trashed=false";
             FileList fileList = drive_v3(query);
             List<File> activities = fileList.getFiles();
             deeper_in_folders(activities);
             write_to_file(resultMap);
-            String getWebContentLink = CreateGoogleFile.main(resultfile);
-            SendMail.main(resultfile,getWebContentLink);
+            String WebViewLink = CreateGoogleFile.main(resultfile);
+            SendMail.main(resultfile,WebViewLink);
 
             // Первый step Cron пройден
             running = false;
@@ -83,7 +81,7 @@ public class StaticReport implements Job {
     }
 
     public static String getOwners(String fileid) {
-        String s = "";
+        String ownersList = "";
         allEmailFromINovus = true;
         try {
             Drive driveservice = Apiv3.Drive();
@@ -91,7 +89,7 @@ public class StaticReport implements Job {
                     .execute();
             List<com.google.api.services.drive.model.Permission> p = permissionList.getPermissions();
             for (com.google.api.services.drive.model.Permission pe : p) {
-                s += pe.getDisplayName() + " ( " + pe.getEmailAddress() + " ) : " + pe.getRole() + "\n";
+                ownersList += pe.getDisplayName() + " ( " + pe.getEmailAddress() + " ) : " + pe.getRole() + "\n";
                 if (pe.getEmailAddress() != null) {
                     if (!(pe.getEmailAddress().toLowerCase().contains("@i-novus"))) {
                         allEmailFromINovus=false;
@@ -101,7 +99,7 @@ public class StaticReport implements Job {
         } catch (Exception e) {
             System.out.println("=====" + e.getMessage() + e.getLocalizedMessage());
         }
-        return s;
+        return ownersList;
     }
 
     public static void write_to_file(ArrayList<AuditMap> resultMap) {

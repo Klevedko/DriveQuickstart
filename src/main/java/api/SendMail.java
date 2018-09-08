@@ -13,7 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class SendMail {
-    public  SendMail(String filetoload, String getWebContentLink) throws MessagingException {
+    public  SendMail(String filetoload, String WebViewLink) throws MessagingException {
         String host = "smtp.gmail.com";
         String Password = "q21xkr927";
         String from = "akrasilnikov@i-novus.ru";
@@ -31,7 +31,7 @@ public class SendMail {
         message.setRecipients(Message.RecipientType.TO, toAddress);
         message.setSubject("JavaMail Attachment");
         BodyPart messageBodyPart = new MimeBodyPart();
-        messageBodyPart.setText("Here's the file\n " + getWebContentLink);
+        messageBodyPart.setText("Here's the file\n " + WebViewLink);
         Multipart multipart = new MimeMultipart();
         multipart.addBodyPart(messageBodyPart);
         messageBodyPart = new MimeBodyPart();
@@ -50,9 +50,9 @@ public class SendMail {
             System.out.println(sfe);
         }
     }
-    public static void main(String file_to_upload, String getWebContentLink){
+    public static void main(String file_to_upload, String WebViewLink){
         try {
-            SendMail sm = new SendMail(file_to_upload,getWebContentLink);
+            SendMail sm = new SendMail(file_to_upload,WebViewLink);
         } catch (MessagingException ex) {
             Logger.getLogger(SendMail.class.getName()).log(Level.SEVERE, null, ex);
         }
