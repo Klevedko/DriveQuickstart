@@ -7,6 +7,7 @@ import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 import com.google.api.services.drive.model.PermissionList;
+import com.google.api.services.drive.model.User;
 import map.AuditMap;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -30,11 +31,13 @@ public class StaticReport implements Job {
     // Переменные для запуска CRON и логики
     public static boolean running = false;
     public static Boolean allEmailFromINovus;
-    public static boolean needReMap = false;
     public static FileList fileList;
     public static String owners = "";
     public static String querry_deeper = "";
     public static Drive driveservice;
+    public static String ownersList;
+    public static String realOwner;
+
     static {
         try {
             driveservice = Apiv3.Drive();
@@ -49,9 +52,10 @@ public class StaticReport implements Job {
         }
         // запустили
         running = true;
-        System.out.println("11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111");
+        System.out.println("---------------- STATIC REPORT RUNS ---------------- ");
         try {
-            String FileId = "0B3jemUSF0v3dYTZEdkNKSmkzXzg";
+            System.out.println(new Date());
+            String FileId = "0B3jemUSF0v3dVFN6Wk8taXdLcms";
             String query = "'" + FileId + "'  in parents and trashed=false";
             FileList fileList = get_driveservice_v3_files(query);
             List<File> activities = fileList.getFiles();
@@ -59,6 +63,8 @@ public class StaticReport implements Job {
             write_to_file(resultMap);
             String WebViewLink = CreateGoogleFile.main(resultfile);
             SendMail.main(resultfile, WebViewLink);
+            System.out.println(new Date());
+
             // Первый step Cron пройден
             // running = false;
         } catch (Exception exec) {
@@ -67,34 +73,38 @@ public class StaticReport implements Job {
 
     public static FileList get_driveservice_v3_files(String query) {
         try {
-            return driveservice.files().list().setQ(query).setFields("nextPageToken, files(id, name, owners, parents, webContentLink, webViewLink)").execute();
+            return driveservice.files().list().setQ(query).setFields("nextPageToken, " +
+                    "files(id, name, owners, parents, webViewLink, owners)").execute();
+            //, sharingUser(emailAddress, permissionId)
         } catch (Exception x) {
+            System.out.println(x);
+            //System.exit(1);
         }
         return fileList;
     }
 
     public static void deeper_in_folders(List<File> file) {
-        needReMap = false;
         for (File f : file) {
             try {
                 System.out.println(f.getName());
                 owners = getOwners(f.getId());
                 if (!allEmailFromINovus) {
-                    AuditMap candy = new AuditMap(f.getName(), f.getWebViewLink(), owners, allEmailFromINovus);
-                    resultMap.add(candy);
+                //AuditMap candy = new AuditMap(f.getName(), realOwner, f.getWebViewLink(), owners, allEmailFromINovus);
+                resultMap.add(new AuditMap(f.getName(), realOwner, f.getWebViewLink(), owners, allEmailFromINovus));
                 }
                 querry_deeper = "'" + f.getId() + "'  in parents and trashed=false";
                 deeper_in_folders(get_driveservice_v3_files(querry_deeper).getFiles());
             } catch (Exception ss) {
+                System.out.println(ss);
             }
         }
     }
 
     public static String getOwners(String fileid) {
-        String ownersList = "";
+        ownersList = "";
         allEmailFromINovus = true;
         try {
-            PermissionList permissionList = driveservice.permissions().list(fileid).setFields("permissions(id, displayName, emailAddress, role)")
+            PermissionList permissionList = driveservice.permissions().list(fileid).setFields("permissions(displayName, emailAddress, role)")
                     .execute();
             List<com.google.api.services.drive.model.Permission> p = permissionList.getPermissions();
             for (com.google.api.services.drive.model.Permission pe : p) {
@@ -102,6 +112,9 @@ public class StaticReport implements Job {
                 if (pe.getEmailAddress() != null) {
                     if (!(pe.getEmailAddress().toLowerCase().contains("@i-novus"))) {
                         allEmailFromINovus = false;
+                    }
+                    if ((pe.getRole().equals("owner"))) {
+                        realOwner = pe.getDisplayName() + " ( " + pe.getEmailAddress() + " )";
                     }
                 }
             }
@@ -127,10 +140,12 @@ public class StaticReport implements Job {
             cell = dataRow.createCell(0);
             cell.setCellValue("File");
             cell = dataRow.createCell(1);
-            cell.setCellValue("WebViewLink");
+            cell.setCellValue("realOwner");
             cell = dataRow.createCell(2);
-            cell.setCellValue("Current rights on file");
+            cell.setCellValue("WebViewLink");
             cell = dataRow.createCell(3);
+            cell.setCellValue("Current rights on file");
+            cell = dataRow.createCell(4);
             cell.setCellValue("all from i-novus");
             row++;
 
@@ -139,10 +154,12 @@ public class StaticReport implements Job {
                 cell = dataRow.createCell(0);
                 cell.setCellValue(product.getName());
                 cell = dataRow.createCell(1);
-                cell.setCellValue(product.getWebViewLink());
+                cell.setCellValue(product.getRealOnwer());
                 cell = dataRow.createCell(2);
-                cell.setCellValue(product.getV3_owners());
+                cell.setCellValue(product.getWebViewLink());
                 cell = dataRow.createCell(3);
+                cell.setCellValue(product.getV3_owners());
+                cell = dataRow.createCell(4);
                 cell.setCellValue(product.getAllEmailFromINovus().toString());
                 row++;
             }

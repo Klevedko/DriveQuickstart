@@ -6,6 +6,7 @@ public class AuditMap implements Serializable, Comparable<AuditMap> {
 
 
     private String date;
+    private String realOnwer;
     private String name;
     private String webViewLink;
     private String target_name;
@@ -19,8 +20,9 @@ public class AuditMap implements Serializable, Comparable<AuditMap> {
         this.name = name;
     }
 
-    public AuditMap(String name, String webViewLink, String v3_getOwners, Boolean allEmailFromINovus) {
+    public AuditMap(String name, String realOnwer, String webViewLink, String v3_getOwners, Boolean allEmailFromINovus) {
         this.name = name;
+        this.realOnwer = realOnwer;
         this.webViewLink = webViewLink;
         this.v3_owners = v3_getOwners;
         this.allEmailFromINovus = allEmailFromINovus;
@@ -143,6 +145,14 @@ public class AuditMap implements Serializable, Comparable<AuditMap> {
 
     public void setWebViewLink(String webViewLink) {
         this.webViewLink = webViewLink;
+    }
+
+    public String getRealOnwer() {
+        return realOnwer;
+    }
+
+    public void setRealOnwer(String realOnwer) {
+        this.realOnwer = realOnwer;
     }
 
     @Override

@@ -13,10 +13,13 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.quartz.*;
 
-import java.io.*;
+import java.io.FileOutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 
 public class DynamicReport implements Job {
 
@@ -60,8 +63,8 @@ public class DynamicReport implements Job {
         running = true;
         needmail = false;
         try {
-            System.out.println("11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111");
-// папка для мониторинга
+            System.out.println("---------------- DYNAMIC REPORT RUNS---------------- ");
+            // папка для мониторинга
             ListActivitiesResponse result = service.activities().list()
                     .setSource("drive.google.com")
                     .setDriveAncestorId("1FcJFZGzQD_QwAnAi2mD2m3gGbxSACOzX")//.setPageSize(11)

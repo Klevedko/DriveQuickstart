@@ -8,7 +8,7 @@ import org.quartz.impl.StdSchedulerFactory;
 public class CronBuild {
     public static void main(String[] args) throws Exception {
 
-        JobDetail job = JobBuilder.newJob(DynamicReport.class)
+        JobDetail job = JobBuilder.newJob(StaticReport.class)
                 .withIdentity("dummyJobName", "group1").build();
 
         Trigger trigger = TriggerBuilder
