@@ -4,12 +4,25 @@ import java.io.Serializable;
 
 public class AuditMap implements Serializable, Comparable<AuditMap> {
 
+
+
+    private String date;
+    private String name;
+    private String webViewLink;
+    private String target_name;
+    private String eventAction;
+    private String history;
+    private String v3_getOwners;
+    private Boolean allEmailFromINovus;
+    private String fileid;
+
     public AuditMap(String name) {
         this.name = name;
     }
 
-    public AuditMap(String name, String v3_getOwners) {
+    public AuditMap(String name, String webViewLink, String v3_getOwners) {
         this.name = name;
+this.webViewLink = webViewLink;
         this.v3_getOwners = v3_getOwners;
     }
 
@@ -18,17 +31,6 @@ public class AuditMap implements Serializable, Comparable<AuditMap> {
         this.v3_getOwners = v3_getOwners;
         this.allEmailFromINovus = allEmailFromINovus;
     }
-
-    private String date;
-    private String name;
-    private String target_name;
-    private String eventAction;
-    private String history;
-    private String v3_getOwners;
-    private Boolean allEmailFromINovus;
-    private String fileid;
-
-
     public AuditMap(String date, String name, String target_name, String eventAction, String history, String v3_getOwners, Boolean allEmailFromINovus) {
         this.date = date;
         this.name = name;
@@ -131,6 +133,14 @@ public class AuditMap implements Serializable, Comparable<AuditMap> {
 
     public void setFileid(String fileid) {
         this.fileid = fileid;
+    }
+
+    public String getWebViewLink() {
+        return webViewLink;
+    }
+
+    public void setWebViewLink(String webViewLink) {
+        this.webViewLink = webViewLink;
     }
 
     @Override

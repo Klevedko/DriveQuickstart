@@ -3,7 +3,7 @@
 Приложение запускается из CronBuild , в определенный день сканирует папку 
 "String FileId = "<FOLDER ID>" в классе StaticReport и все подпапки.
 Считываются файлы, аккаунты и их права на каждый файл.
-Файл сохраняется на жесткий диск под именем "Audit_result_01_01_2001.xls".
+Файл сохраняется на жесткий диск под именем "static_audit_result_01_01_2001.xls".
 Файл загружается классом CreateGoogleFile на Google Drive в папку
 File googleFile = createGoogleFile(<FOLDER ID>).
 

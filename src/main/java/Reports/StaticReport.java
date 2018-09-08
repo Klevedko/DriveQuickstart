@@ -42,7 +42,7 @@ public class StaticReport implements Job {
         running = true;
         System.out.println("11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111");
         try {
-            String FileId = "0B3jemUSF0v3dUDdJaU1YN2RBdmc";
+            String FileId = "1wlyj65snRXW5QXhp5wJD54eUxtZm7CNZ";
             String query = "'" + FileId + "'  in parents and trashed=false";
             FileList fileList = drive_v3(query);
             List<File> activities = fileList.getFiles();
@@ -60,7 +60,7 @@ public class StaticReport implements Job {
     public static FileList drive_v3(String query) {
         try {
             Drive driveservice = Apiv3.Drive();
-            return driveservice.files().list().setQ(query).execute();
+            return driveservice.files().list().setQ(query).setFields("nextPageToken, files(id, name, owners, parents, webContentLink, webViewLink)").execute();
         } catch (Exception x) {
         }
         return fileList;
@@ -75,7 +75,7 @@ public class StaticReport implements Job {
             } catch (Exception ss) {
             }
             System.out.println(f.getName());
-            AuditMap candy = new AuditMap(f.getName() , getOwners(f.getId()));
+            AuditMap candy = new AuditMap(f.getName() , f.getWebViewLink(),getOwners(f.getId()));
             resultMap.add(candy);
         }
     }
@@ -118,8 +118,10 @@ public class StaticReport implements Job {
             cell = dataRow.createCell(0);
             cell.setCellValue("File");
             cell = dataRow.createCell(1);
-            cell.setCellValue("Current rights on file");
+            cell.setCellValue("WebViewLink");
             cell = dataRow.createCell(2);
+            cell.setCellValue("Current rights on file");
+            cell = dataRow.createCell(3);
             cell.setCellValue("all from i-novus");
             row++;
 
@@ -128,6 +130,8 @@ public class StaticReport implements Job {
                 cell = dataRow.createCell(0);
                 cell.setCellValue(product.getName());
                 cell = dataRow.createCell(1);
+                cell.setCellValue(product.getWebViewLink());
+                cell = dataRow.createCell(2);
                 cell.setCellValue(product.getV3_getOwners());
                 row++;
             }
