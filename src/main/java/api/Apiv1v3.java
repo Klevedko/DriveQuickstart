@@ -1,10 +1,5 @@
 package api;
-import Reports.DynamicReport;
-import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
-import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
-import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
-import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
+import api.authorize.Apiv3;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
@@ -25,11 +20,11 @@ import org.json.JSONObject;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
+import static api.authorize.Apiv1.getAppsactivityService;
 
 public class Apiv1v3{
     /**
@@ -92,26 +87,7 @@ public class Apiv1v3{
     public static Boolean allEmailFromINovus;
     public static DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:ms");
 
-    public static Credential authorize() throws IOException {
-        // Load client secrets.
-        InputStream in =
-                DynamicReport.class.getResourceAsStream("/credentials.json");
-        GoogleClientSecrets clientSecrets =
-                GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 
-        // Build flow and trigger user authorization request.
-        GoogleAuthorizationCodeFlow flow =
-                new GoogleAuthorizationCodeFlow.Builder(
-                        HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
-                        .setDataStoreFactory(DATA_STORE_FACTORY)
-                        .setAccessType("offline")
-                        .build();
-        Credential credential = new AuthorizationCodeInstalledApp(
-                flow, new LocalServerReceiver()).authorize("akrasilnikov@i-novus.ru");
-        System.out.println(
-                "Credentials saved to " + DATA_STORE_DIR.getAbsolutePath());
-        return credential;
-    }
 
     /**
      * Build and return an authorized Apps Activity client service.
@@ -119,13 +95,6 @@ public class Apiv1v3{
      * @return an authorized Appsactivity client service
      * @throws IOException
      */
-    public static Appsactivity getAppsactivityService() throws IOException {
-        Credential active_credential = authorize();
-        return new Appsactivity.Builder(
-                HTTP_TRANSPORT, JSON_FACTORY, active_credential)
-                .setApplicationName(APPLICATION_NAME)
-                .build();
-    }
 
     public static void main(String[] args){
         System.out.println("1111111111111111111111111111111111111111111111111111111111111111");

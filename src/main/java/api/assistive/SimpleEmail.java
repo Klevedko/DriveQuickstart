@@ -1,4 +1,4 @@
-package api;
+package api.assistive;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;

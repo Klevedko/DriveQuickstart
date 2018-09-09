@@ -1,19 +1,19 @@
-package api;
+package api.Google;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 
-import api.GoogleDriveUtils;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 
-public class GetSubFolders {
+public class GetSubFoldersByName {
 
     // com.google.api.services.drive.model.File
-    public static final List<File> getGoogleSubFolders(String googleFolderIdParent) throws IOException {
+    public static final List<File> getGoogleSubFolderByName(String googleFolderIdParent, String subFolderName)
+            throws IOException {
 
         Drive driveService = GoogleDriveUtils.getDriveService();
 
@@ -22,16 +22,17 @@ public class GetSubFolders {
 
         String query = null;
         if (googleFolderIdParent == null) {
-            query = " mimeType = 'application/vnd.google-apps.folder' " //
+            query = " name = '" + subFolderName + "' " //
+                    + " and mimeType = 'application/vnd.google-apps.folder' " //
                     + " and 'root' in parents";
         } else {
-            query = " mimeType = 'application/vnd.google-apps.folder' " //
+            query = " name = '" + subFolderName + "' " //
+                    + " and mimeType = 'application/vnd.google-apps.folder' " //
                     + " and '" + googleFolderIdParent + "' in parents";
         }
 
         do {
             FileList result = driveService.files().list().setQ(query).setSpaces("drive") //
-                    // Fields will be assigned values: id, name, createdTime
                     .setFields("nextPageToken, files(id, name, createdTime)")//
                     .setPageToken(pageToken).execute();
             for (File file : result.getFiles()) {
@@ -44,14 +45,14 @@ public class GetSubFolders {
     }
 
     // com.google.api.services.drive.model.File
-    public static final List<File> getGoogleRootFolders() throws IOException {
-        return getGoogleSubFolders(null);
+    public static final List<File> getGoogleRootFoldersByName(String subFolderName) throws IOException {
+        return getGoogleSubFolderByName(null,subFolderName);
     }
 
     public static void main(String[] args) throws IOException {
 
-        List<File> googleRootFolders = getGoogleRootFolders();
-        for (File folder : googleRootFolders) {
+        List<File> rootGoogleFolders = getGoogleRootFoldersByName("TEST");
+        for (File folder : rootGoogleFolders) {
 
             System.out.println("Folder ID: " + folder.getId() + " --- Name: " + folder.getName());
         }

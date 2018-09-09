@@ -1,7 +1,7 @@
 package Reports;
 
-import api.Apiv1;
-import api.Apiv3;
+import api.authorize.Apiv1;
+import api.authorize.Apiv3;
 import com.google.api.services.appsactivity.Appsactivity;
 import com.google.api.services.appsactivity.model.*;
 import com.google.api.services.drive.Drive;
@@ -67,7 +67,7 @@ public class DynamicReport implements Job {
             // папка для мониторинга
             ListActivitiesResponse result = service.activities().list()
                     .setSource("drive.google.com")
-                    .setDriveAncestorId("1FcJFZGzQD_QwAnAi2mD2m3gGbxSACOzX")//.setPageSize(11)
+                    .setDriveAncestorId("1LR-gffElJbKDmUeZUDOZpTwjbD19odNq")//.setPageSize(11)
                     .execute();
 
             List<Activity> activities = result.getActivities();

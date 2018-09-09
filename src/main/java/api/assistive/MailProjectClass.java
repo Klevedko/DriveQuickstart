@@ -1,4 +1,4 @@
-package api;
+package api.assistive;
 
 import java.util.Properties;
 import javax.activation.*;

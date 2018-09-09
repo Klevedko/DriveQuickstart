@@ -1,5 +1,6 @@
-package api;
+package api.authorize;
 
+import api.Apiv1v3;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
@@ -60,39 +61,5 @@ public class Apiv3 {
                 .setApplicationName(APPLICATION_NAME)
                 .build();
         return service;
-    }
-
-    public static void main(String... args) throws IOException, GeneralSecurityException {
-        // Build a new authorized API client service.
-        // Print the names and IDs for up to 10 files.
-        FileList result = Drive().files().list()
-                //.setPageSize(10)
-                .setFields("nextPageToken, files(id, name, owners)")
-                .execute();
-        List<File> files = result.getFiles();
-        if (files == null || files.isEmpty()) {
-            System.out.println("No files found.");
-        } else {
-            System.out.println("Files:");
-            for (File file : files) {
-                System.out.printf("%s (%s)\n", file.getName(), file.getId());
-                if (file.getName().equals("permissions")) {
-                    List<User> l = file.getOwners();
-                    for (User user : l) {
-                        System.out.println(user.getEmailAddress());
-                    }
-                }
-            }
-        }
-        /*Drive driveService = new Drive.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
-                .setApplicationName(APPLICATION_NAME)
-                .build();
-
-        ChangeList changes = driveService.changes().list("3411")
-                .execute();
-        for (Change change : changes.getChanges()) {
-            // Process change
-            System.out.println("Change found for file: " + change.getFileId());
-        }*/
     }
 }

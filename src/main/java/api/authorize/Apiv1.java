@@ -1,4 +1,4 @@
-package api;
+package api.authorize;
 
 import Reports.DynamicReport;
 import com.google.api.client.auth.oauth2.Credential;

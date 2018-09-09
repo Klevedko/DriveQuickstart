@@ -1,13 +1,13 @@
 package Reports;
 
-import api.Apiv3;
-import api.CreateGoogleFile;
-import api.SendMail;
+import api.assistive.SimpleEmail;
+import api.authorize.Apiv3;
+import api.Google.CreateGoogleFile;
+import api.assistive.SendMail;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 import com.google.api.services.drive.model.PermissionList;
-import com.google.api.services.drive.model.User;
 import map.AuditMap;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -22,6 +22,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import static api.assistive.SendMail.SendErrorMail;
 
 public class StaticReport implements Job {
 
@@ -54,31 +56,35 @@ public class StaticReport implements Job {
         running = true;
         System.out.println("---------------- STATIC REPORT RUNS ---------------- ");
         try {
-            System.out.println(new Date());
-            String FileId = "0B3jemUSF0v3dVFN6Wk8taXdLcms";
-            String query = "'" + FileId + "'  in parents and trashed=false";
+            System.out.println("start " + new Date());
+            String startFolderId = "1wlyj65snRXW5QXhp5wJD54eUxtZm7CNZ";
+            String query = "'" + startFolderId + "'  in parents and trashed=false";
             FileList fileList = get_driveservice_v3_files(query);
-            List<File> activities = fileList.getFiles();
-            deeper_in_folders(activities);
+            List<File> listFile = fileList.getFiles();
+            deeper_in_folders(listFile);
             write_to_file(resultMap);
             String WebViewLink = CreateGoogleFile.main(resultfile);
             SendMail.main(resultfile, WebViewLink);
-            System.out.println(new Date());
+            System.out.println("end " + new Date());
 
             // Первый step Cron пройден
             // running = false;
         } catch (Exception exec) {
+            try {
+                SimpleEmail.generateAndSendEmail();
+            } catch (Exception global) {
+            }
+
         }
     }
 
     public static FileList get_driveservice_v3_files(String query) {
         try {
             return driveservice.files().list().setQ(query).setFields("nextPageToken, " +
-                    "files(id, name, owners, parents, webViewLink, owners)").execute();
+                    "files(id, name, owners, parents, webViewLink, owners, mimeType, thumbnailLink)").execute();
             //, sharingUser(emailAddress, permissionId)
         } catch (Exception x) {
-            System.out.println(x);
-            //System.exit(1);
+            System.out.println("get_driveservice_v3_files = " + x);
         }
         return fileList;
     }
@@ -87,19 +93,25 @@ public class StaticReport implements Job {
         for (File f : file) {
             try {
                 System.out.println(f.getName());
-                owners = getOwners(f.getId());
-                if (!allEmailFromINovus) {
-                //AuditMap candy = new AuditMap(f.getName(), realOwner, f.getWebViewLink(), owners, allEmailFromINovus);
-                resultMap.add(new AuditMap(f.getName(), realOwner, f.getWebViewLink(), owners, allEmailFromINovus));
+                // Если получили папку - рекурсивно её исследуем.
+                if (f.getMimeType().equals("application/vnd.google-apps.folder") || f.getMimeType().equals("folder")) {
+                    querry_deeper = "'" + f.getId() + "'  in parents and trashed=false";
+                    deeper_in_folders(get_driveservice_v3_files(querry_deeper).getFiles());
+                    // Если получили файл и у него подозрительные owners - пишем его
+                } else {
+                    owners = getOwners(f.getId());
+                    if (!allEmailFromINovus) {
+                        //AuditMap candy = new AuditMap(f.getName(), realOwner, f.getWebViewLink(), owners, allEmailFromINovus);
+                        resultMap.add(new AuditMap(f.getName(), realOwner, f.getWebViewLink(), owners, allEmailFromINovus));
+                    }
                 }
-                querry_deeper = "'" + f.getId() + "'  in parents and trashed=false";
-                deeper_in_folders(get_driveservice_v3_files(querry_deeper).getFiles());
             } catch (Exception ss) {
-                System.out.println(ss);
+                System.out.println("deeper_in_folders = " + f.getName() + ss);
             }
         }
     }
 
+    // Метод возвращает список владельцев. Переопределяет  allEmailFromINovus  и  realOwner
     public static String getOwners(String fileid) {
         ownersList = "";
         allEmailFromINovus = true;
@@ -119,7 +131,7 @@ public class StaticReport implements Job {
                 }
             }
         } catch (Exception e) {
-            System.out.println("=====" + e.getMessage() + e.getLocalizedMessage());
+            System.out.println("getOwners = " + e.getMessage() + e.getLocalizedMessage());
         }
         return ownersList;
     }
@@ -166,7 +178,7 @@ public class StaticReport implements Job {
             wb.write(fileout);
             fileout.close();
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            System.out.println("write_to_file = " + e);
             System.exit(0);
         }
     }
