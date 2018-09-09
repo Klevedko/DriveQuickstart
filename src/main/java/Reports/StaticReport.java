@@ -23,8 +23,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static api.assistive.SendMail.SendErrorMail;
-
 public class StaticReport implements Job {
 
     public static ArrayList<AuditMap> resultMap = new ArrayList<AuditMap>();
