@@ -22,8 +22,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.*;
 
 public class StaticReport implements Job {
+    public static ExecutorService executor = Executors.newFixedThreadPool(6);//creating a pool of 5 threads
 
     public static ArrayList<AuditMap> resultMap = new ArrayList<AuditMap>();
     public static String resultfiletemplate = "Static_audit_result_";
@@ -37,6 +39,7 @@ public class StaticReport implements Job {
     public static Drive driveservice;
     public static String ownersList;
     public static String realOwner;
+    public static List<Future<Object>> futures = new ArrayList<>();
 
     static {
         try {
@@ -55,16 +58,17 @@ public class StaticReport implements Job {
         System.out.println("---------------- STATIC REPORT RUNS ---------------- ");
         try {
             System.out.println("start " + new Date());
-            String startFolderId = "1tP-IDq3DksMYA1HPMuubADEllTxCQ04j";
-            String query = "'" + startFolderId + "'  in parents and trashed=false";
-            FileList fileList = get_driveservice_v3_files(query);
-            List<File> listFile = fileList.getFiles();
-            deeper_in_folders(listFile);
-            write_to_file(resultMap);
-            String WebViewLink = CreateGoogleFile.main(resultfile);
-            SendMail.main(resultfile, WebViewLink);
-            System.out.println("end " + new Date());
-
+            String startFolderId = "'" + "1tP-IDq3DksMYA1HPMuubADEllTxCQ04j" + "'  in parents and trashed=false";
+            Runnable worker = new WorkerThread(startFolderId);
+                executor.execute(worker);//calling execute method of ExecutorService
+            //Thread.sleep(10000);
+            while (executor.isTerminated()) {
+                System.out.println("Finished all threads");
+                write_to_file(resultMap);
+                String WebViewLink = CreateGoogleFile.main(resultfile);
+                SendMail.main(resultfile, WebViewLink);
+                System.out.println("end " + new Date());
+            }
             // Первый step Cron пройден
             // running = false;
         } catch (Exception exec) {
@@ -75,37 +79,6 @@ public class StaticReport implements Job {
         }
     }
 
-    public static FileList get_driveservice_v3_files(String query) {
-        try {
-            return driveservice.files().list().setQ(query).setFields("nextPageToken, " +
-                    "files(id, name, owners, parents, webViewLink, owners, mimeType, thumbnailLink)").execute();
-            //, sharingUser(emailAddress, permissionId)
-        } catch (Exception x) {
-            System.out.println("get_driveservice_v3_files = " + x);
-        }
-        return fileList;
-    }
-
-    public synchronized void deeper_in_folders(List<File> file) {
-        for (File f : file) {
-            try {
-                System.out.println(f.getName());
-                // Если получили папку - рекурсивно её исследуем.
-                if (f.getMimeType().equals("application/vnd.google-apps.folder") || f.getMimeType().equals("folder")) {
-                    querry_deeper = "'" + f.getId() + "'  in parents and trashed=false";
-                    deeper_in_folders(get_driveservice_v3_files(querry_deeper).getFiles());
-                    // Если получили файл и у него подозрительные owners - пишем его
-                } else {
-                    owners = getOwners(f.getId());
-                    if (!allEmailFromINovus) {
-                        resultMap.add(new AuditMap(f.getName(), realOwner, f.getWebViewLink(), owners, allEmailFromINovus));
-                    }
-                }
-            } catch (Exception ss) {
-                System.out.println("deeper_in_folders = " + f.getName() + ss);
-            }
-        }
-    }
 
     // Метод возвращает список владельцев. Переопределяет  allEmailFromINovus  и  realOwner
     public static String getOwners(String fileid) {
@@ -161,14 +134,6 @@ public class StaticReport implements Job {
                 dataRow = list.createRow(row);
                 cell = dataRow.createCell(0);
                 cell.setCellValue(product.getName());
-                cell = dataRow.createCell(1);
-                cell.setCellValue(product.getRealOnwer());
-                cell = dataRow.createCell(2);
-                cell.setCellValue(product.getWebViewLink());
-                cell = dataRow.createCell(3);
-                cell.setCellValue(product.getV3_owners());
-                cell = dataRow.createCell(4);
-                cell.setCellValue(product.getAllEmailFromINovus().toString());
                 row++;
             }
             wb.write(fileout);
