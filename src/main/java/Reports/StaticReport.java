@@ -55,7 +55,7 @@ public class StaticReport implements Job {
         System.out.println("---------------- STATIC REPORT RUNS ---------------- ");
         try {
             System.out.println("start " + new Date());
-            String startFolderId = "1wlyj65snRXW5QXhp5wJD54eUxtZm7CNZ";
+            String startFolderId = "1tP-IDq3DksMYA1HPMuubADEllTxCQ04j";
             String query = "'" + startFolderId + "'  in parents and trashed=false";
             FileList fileList = get_driveservice_v3_files(query);
             List<File> listFile = fileList.getFiles();
@@ -72,7 +72,6 @@ public class StaticReport implements Job {
                 SimpleEmail.generateAndSendEmail();
             } catch (Exception global) {
             }
-
         }
     }
 
@@ -87,7 +86,7 @@ public class StaticReport implements Job {
         return fileList;
     }
 
-    public static void deeper_in_folders(List<File> file) {
+    public synchronized void deeper_in_folders(List<File> file) {
         for (File f : file) {
             try {
                 System.out.println(f.getName());
@@ -99,7 +98,6 @@ public class StaticReport implements Job {
                 } else {
                     owners = getOwners(f.getId());
                     if (!allEmailFromINovus) {
-                        //AuditMap candy = new AuditMap(f.getName(), realOwner, f.getWebViewLink(), owners, allEmailFromINovus);
                         resultMap.add(new AuditMap(f.getName(), realOwner, f.getWebViewLink(), owners, allEmailFromINovus));
                     }
                 }

@@ -5,7 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/CronBuild.iml" filepath="$PROJECT_DIR$/.idea/modules/CronBuild.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/CronBuild_main.iml" filepath="$PROJECT_DIR$/.idea/modules/CronBuild_main.iml" group="CronBuild" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/CronBuild_test.iml" filepath="$PROJECT_DIR$/.idea/modules/CronBuild_test.iml" group="CronBuild" />
-      <module fileurl="file://C:\IdeaProjects\DriveQuickstart\.idea\modules\api_v1_v3.iml" filepath="C:\IdeaProjects\DriveQuickstart\.idea\modules\api_v1_v3.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/api_v1_v3.iml" filepath="$PROJECT_DIR$/.idea/modules/api_v1_v3.iml" />
     </modules>
   </component>
 </project>
