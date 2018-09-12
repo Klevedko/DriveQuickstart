@@ -1,5 +1,6 @@
 package Reports;
 
+import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 import com.google.api.services.drive.model.PermissionList;
 import map.FileIdMap;
@@ -36,9 +37,12 @@ class WorkerThread implements Runnable {
                         }
                     }
                 }
-                elemet.setIdreal_owner(realOwner);
-                elemet.setIdowners(ownersList);
-                elemet.setIdInovus(allEmailFromINovus);
+                if (!allEmailFromINovus) {
+                    elemet.setIdreal_owner(realOwner);
+                    elemet.setIdowners(ownersList);
+                    elemet.setIdInovus(allEmailFromINovus);
+                } else
+                    fileIdMap.remove(elemet);
             } catch (Exception e) {
                 System.out.println("getOwners = " + e.getMessage() + e.getLocalizedMessage());
             }
