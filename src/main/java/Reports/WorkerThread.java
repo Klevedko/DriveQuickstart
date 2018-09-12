@@ -1,70 +1,49 @@
 package Reports;
 
-import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
-import map.AuditMap;
+import com.google.api.services.drive.model.PermissionList;
+import map.FileIdMap;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import static Reports.StaticReport.*;
 
 class WorkerThread implements Runnable {
-    private String message;
+    private FileIdMap elemet;
 
-    public WorkerThread(String s) {
-        this.message = s;
+    public WorkerThread(FileIdMap income_element) {
+        this.elemet = income_element;
     }
 
     public void run() {
-        try {
-            List<Future<Object>> futures = new ArrayList<>();
-            List<File> listFile = get_driveservice_v3_files(this.message).getFiles();
-            for (final File f : listFile) {
-                futures.add(executor.submit(new Callable<Object>() {
-                    public Object call() throws Exception {
-                        return null;
+        {
+            System.out.println("starting new thread WITH NAME= " + elemet.getName());
+            ownersList = "";
+            allEmailFromINovus = true;
+            try {
+                Thread.sleep(400);
+                PermissionList permissionList = driveservice.permissions().list(elemet.getId()).setFields("permissions(displayName, emailAddress, role)")
+                        .execute();
+                List<com.google.api.services.drive.model.Permission> p = permissionList.getPermissions();
+                for (com.google.api.services.drive.model.Permission pe : p) {
+                    ownersList += pe.getDisplayName() + " ( " + pe.getEmailAddress() + " ) : " + pe.getRole() + "\n";
+                    if (pe.getEmailAddress() != null) {
+                        if (!(pe.getEmailAddress().toLowerCase().contains("@i-novus"))) {
+                            allEmailFromINovus = false;
+                        }
+                        if ((pe.getRole().equals("owner"))) {
+                            realOwner = pe.getDisplayName() + " ( " + pe.getEmailAddress() + " )";
+                        }
                     }
-                }));
-                if (f.getMimeType().equals("application/vnd.google-apps.folder") || f.getMimeType().equals("folder")) {
-                    System.out.println("folder= " + f.getName());
-                    Thread.sleep(350);
-                    String newId = "'" + f.getId() + "'  in parents and trashed=false";
-                    Runnable worker = new WorkerThread(newId);
-                    executor.execute(worker);
-                } else {
-                    System.out.println("  file= " + f.getName() + resultMap.size());
-                    resultMap.add(new AuditMap(f.getName(), realOwner, f.getWebViewLink(), owners, allEmailFromINovus));
-//                    resultMap.add(new AuditMap(f.getName()));
                 }
+                elemet.setIdreal_owner(realOwner);
+                elemet.setIdowners(ownersList);
+                elemet.setIdInovus(allEmailFromINovus);
+            } catch (Exception e) {
+                System.out.println("getOwners = " + e.getMessage() + e.getLocalizedMessage());
             }
-        } catch (Exception tt) {
-            System.out.println(tt);
-        }
-    }
-public static void x(){
+            System.out.println("DONE thread WITH NAME= " + elemet.getName());
 
-}
-    private void processmessage() {
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
-    }
-
-    public static FileList get_driveservice_v3_files(String query) {
-        try {
-            return driveservice.files().list().setQ(query).setFields("nextPageToken, " +
-                    "files(id, name, owners, parents, webViewLink, owners, mimeType, thumbnailLink)").execute();
-            //, sharingUser(emailAddress, permissionId)
-        } catch (Exception x) {
-            System.out.println("get_driveservice_v3_files = " + x);
-        }
-        return fileList;
     }
 }

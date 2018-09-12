@@ -1,3 +1,4 @@
+/*
 package Quartz;
 
 import Reports.DynamicReport;
@@ -24,4 +25,4 @@ public class CronBuild {
         scheduler.scheduleJob(job, trigger);
     }
 
-}
+}*/

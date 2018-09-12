@@ -9,6 +9,7 @@ import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 import com.google.api.services.drive.model.PermissionList;
 import map.AuditMap;
+import map.FileIdMap;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -24,10 +25,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.*;
 
-public class StaticReport implements Job {
-    public static ExecutorService executor = Executors.newFixedThreadPool(6);//creating a pool of 5 threads
+public class StaticReport {
 
     public static ArrayList<AuditMap> resultMap = new ArrayList<AuditMap>();
+    public static ArrayList<FileIdMap> fileIdMap = new ArrayList<FileIdMap>();
     public static String resultfiletemplate = "Static_audit_result_";
     public static String resultfile = "";
     // Переменные для запуска CRON и логики
@@ -39,7 +40,8 @@ public class StaticReport implements Job {
     public static Drive driveservice;
     public static String ownersList;
     public static String realOwner;
-    public static List<Future<Object>> futures = new ArrayList<>();
+    public static ExecutorService executor = Executors.newFixedThreadPool(6);
+    public static List<Future<?>> futures = new ArrayList<>();
 
     static {
         try {
@@ -48,33 +50,43 @@ public class StaticReport implements Job {
         }
     }
 
-    public void execute(JobExecutionContext context) throws JobExecutionException {
+    public static void main(String[] args) {
         // блок для CRON - не запускаем, пока не выполнился предыдущий шаг
-        if (running) {
+        /*if (running) {
             return;
-        }
+        }*/
         // запустили
         running = true;
-        System.out.println("---------------- STATIC REPORT RUNS ---------------- ");
         try {
             System.out.println("start " + new Date());
-            String startFolderId = "'" + "1tP-IDq3DksMYA1HPMuubADEllTxCQ04j" + "'  in parents and trashed=false";
-
-            // ------------------  threads start! ----------------------
-            futures.add(executor.submit(new Callable<Object>() {
-                public Object call() throws Exception {
-                    return null;
-                }
-            }));
-            Runnable worker = new WorkerThread(startFolderId);
-                executor.execute(worker);//calling execute method of ExecutorService
-            while (executor.isTerminated()) {
-                System.out.println("Finished all threads");
-                write_to_file(resultMap);
-                String WebViewLink = CreateGoogleFile.main(resultfile);
-                SendMail.main(resultfile, WebViewLink);
-                System.out.println("end " + new Date());
+            //String startFolderId = "1tP-IDq3DksMYA1HPMuubADEllTxCQ04j";
+            String startFolderId = "0B3jemUSF0v3dVFN6Wk8taXdLcms";
+            String query = "'" + startFolderId + "'  in parents and trashed=false";
+            System.out.println("---------------- STATIC RUN ---------------- ");
+            FileList fileList = get_driveservice_v3_files(query);
+            List<File> listFile = fileList.getFiles();
+            deeper_in_folders(listFile);
+            System.out.println("------show me fileidmap");
+            for (int i = 0; i < fileIdMap.size(); i++) {
+                System.out.println(fileIdMap.get(i).getId());
             }
+
+            System.out.println("----- start THREADS");
+            for (int i = 0; i < fileIdMap.size(); i++) {
+                Runnable worker = new WorkerThread(fileIdMap.get(i));
+                futures.add(executor.submit(worker));
+            }
+            for (Future<?> feature : futures) {
+                while (!feature.isDone())
+                    TimeUnit.SECONDS.sleep(1);
+                feature.get();
+            }
+
+            write_to_file(fileIdMap);
+            String WebViewLink = CreateGoogleFile.main(resultfile);
+            SendMail.main(resultfile, WebViewLink);
+            System.out.println("end " + new Date());
+
             // Первый step Cron пройден
             // running = false;
         } catch (Exception exec) {
@@ -83,35 +95,38 @@ public class StaticReport implements Job {
             } catch (Exception global) {
             }
         }
+        finally {
+            executor.shutdown();
+        }
     }
 
+    public static FileList get_driveservice_v3_files(String query) {
+        try {
+            return driveservice.files().list().setQ(query).setFields("nextPageToken, " +
+                    "files(id, name, owners, parents, webViewLink, owners, mimeType, thumbnailLink)").execute();
+            //, sharingUser(emailAddress, permissionId)
+        } catch (Exception x) {
+            System.out.println("get_driveservice_v3_files = " + x);
+        }
+        return fileList;
+    }
+
+    public static void deeper_in_folders(List<File> file) {
+        for (File f : file) {
+            try {
+                fileIdMap.add(new FileIdMap(f.getId(), f.getName(), f.getWebViewLink(),
+                        "", "", false));
+                querry_deeper = "'" + f.getId() + "'  in parents and trashed=false";
+                deeper_in_folders(get_driveservice_v3_files(querry_deeper).getFiles());
+            } catch (Exception ss) {
+                System.out.println("deeper_in_folders = " + f.getName() + ss);
+            }
+        }
+    }
 
     // Метод возвращает список владельцев. Переопределяет  allEmailFromINovus  и  realOwner
-    public static String getOwners(String fileid) {
-        ownersList = "";
-        allEmailFromINovus = true;
-        try {
-            PermissionList permissionList = driveservice.permissions().list(fileid).setFields("permissions(displayName, emailAddress, role)")
-                    .execute();
-            List<com.google.api.services.drive.model.Permission> p = permissionList.getPermissions();
-            for (com.google.api.services.drive.model.Permission pe : p) {
-                ownersList += pe.getDisplayName() + " ( " + pe.getEmailAddress() + " ) : " + pe.getRole() + "\n";
-                if (pe.getEmailAddress() != null) {
-                    if (!(pe.getEmailAddress().toLowerCase().contains("@i-novus"))) {
-                        allEmailFromINovus = false;
-                    }
-                    if ((pe.getRole().equals("owner"))) {
-                        realOwner = pe.getDisplayName() + " ( " + pe.getEmailAddress() + " )";
-                    }
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("getOwners = " + e.getMessage() + e.getLocalizedMessage());
-        }
-        return ownersList;
-    }
 
-    public static void write_to_file(ArrayList<AuditMap> resultMap) {
+    public static void write_to_file(ArrayList<FileIdMap> fileIdMap) {
         try {
             String audit_date = new SimpleDateFormat("dd-MM-yyyy").format(new Date());
             resultfile = resultfiletemplate.concat(audit_date.concat(".xlsx"));
@@ -136,10 +151,18 @@ public class StaticReport implements Job {
             cell.setCellValue("all from i-novus");
             row++;
 
-            for (AuditMap product : resultMap) {
+            for (FileIdMap product : fileIdMap) {
                 dataRow = list.createRow(row);
                 cell = dataRow.createCell(0);
                 cell.setCellValue(product.getName());
+                cell = dataRow.createCell(1);
+                cell.setCellValue(product.getIdreal_owner());
+                cell = dataRow.createCell(2);
+                cell.setCellValue(product.getWebViewLink());
+                cell = dataRow.createCell(3);
+                cell.setCellValue(product.getIdowners());
+                cell = dataRow.createCell(4);
+                cell.setCellValue(product.getIdInovus().toString());
                 row++;
             }
             wb.write(fileout);
