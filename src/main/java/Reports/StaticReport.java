@@ -59,9 +59,15 @@ public class StaticReport implements Job {
         try {
             System.out.println("start " + new Date());
             String startFolderId = "'" + "1tP-IDq3DksMYA1HPMuubADEllTxCQ04j" + "'  in parents and trashed=false";
+
+            // ------------------  threads start! ----------------------
+            futures.add(executor.submit(new Callable<Object>() {
+                public Object call() throws Exception {
+                    return null;
+                }
+            }));
             Runnable worker = new WorkerThread(startFolderId);
                 executor.execute(worker);//calling execute method of ExecutorService
-            //Thread.sleep(10000);
             while (executor.isTerminated()) {
                 System.out.println("Finished all threads");
                 write_to_file(resultMap);
