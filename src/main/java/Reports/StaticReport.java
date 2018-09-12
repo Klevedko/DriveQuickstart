@@ -59,7 +59,7 @@ public class StaticReport {
         running = true;
         try {
             System.out.println("start " + new Date());
-            String startFolderId = "1tP-IDq3DksMYA1HPMuubADEllTxCQ04j";
+            String startFolderId = "0B3jemUSF0v3dTmtnektTSDNlelk";
             //String startFolderId = "0B3jemUSF0v3dVFN6Wk8taXdLcms";
             String query = "'" + startFolderId + "'  in parents and trashed=false";
             System.out.println("---------------- STATIC RUN ---------------- ");
@@ -67,9 +67,9 @@ public class StaticReport {
             List<File> listFile = fileList.getFiles();
             deeper_in_folders(listFile);
             System.out.println("------show me fileidmap");
-            for (int i = 0; i < fileIdMap.size(); i++) {
+          /*  for (int i = 0; i < fileIdMap.size(); i++) {
                 System.out.println(fileIdMap.get(i).getId());
-            }
+            }*/
 
             System.out.println("----- start THREADS");
             for (int i = 0; i < fileIdMap.size(); i++) {
@@ -102,7 +102,7 @@ public class StaticReport {
     public static FileList get_driveservice_v3_files(String query) {
         try {
             return driveservice.files().list().setQ(query).setFields("nextPageToken, " +
-                    "files(id, name, owners, parents, webViewLink, owners, mimeType, thumbnailLink)").execute();
+                    "files(id, name, owners, webViewLink, owners, mimeType)").execute();
             //, sharingUser(emailAddress, permissionId)
         } catch (Exception x) {
             System.out.println("get_driveservice_v3_files = " + x);
@@ -113,13 +113,14 @@ public class StaticReport {
     public static void deeper_in_folders(List<File> file) {
         for (File f : file) {
             try {
-                fileIdMap.add(new FileIdMap(f.getId(), f.getName(), f.getWebViewLink(),
-                        "", "", false));
-
                 if (f.getMimeType().equals("application/vnd.google-apps.folder") || f.getMimeType().equals("folder")) {
+                    System.out.println(f.getName());
                     querry_deeper = "'" + f.getId() + "'  in parents and trashed=false";
                     deeper_in_folders(get_driveservice_v3_files(querry_deeper).getFiles());
                 }
+                else
+                    fileIdMap.add(new FileIdMap(f.getId(), f.getName(), f.getWebViewLink(),
+                            "", "", false));
             } catch (Exception ss) {
                 System.out.println("deeper_in_folders = " + f.getName() + ss);
             }
