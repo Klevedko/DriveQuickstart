@@ -94,8 +94,7 @@ public class StaticReport {
                 SimpleEmail.generateAndSendEmail();
             } catch (Exception global) {
             }
-        }
-        finally {
+        } finally {
             executor.shutdown();
         }
     }
@@ -116,8 +115,11 @@ public class StaticReport {
             try {
                 fileIdMap.add(new FileIdMap(f.getId(), f.getName(), f.getWebViewLink(),
                         "", "", false));
-                querry_deeper = "'" + f.getId() + "'  in parents and trashed=false";
-                deeper_in_folders(get_driveservice_v3_files(querry_deeper).getFiles());
+
+                if (f.getMimeType().equals("application/vnd.google-apps.folder") || f.getMimeType().equals("folder")) {
+                    querry_deeper = "'" + f.getId() + "'  in parents and trashed=false";
+                    deeper_in_folders(get_driveservice_v3_files(querry_deeper).getFiles());
+                }
             } catch (Exception ss) {
                 System.out.println("deeper_in_folders = " + f.getName() + ss);
             }
