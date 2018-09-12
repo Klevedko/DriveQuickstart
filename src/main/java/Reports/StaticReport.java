@@ -5,7 +5,6 @@ import api.authorize.Apiv3;
 import api.Google.CreateGoogleFile;
 import api.assistive.SendMail;
 import com.google.api.services.drive.Drive;
-import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 import com.google.api.services.drive.model.PermissionList;
 import map.AuditMap;
@@ -13,9 +12,6 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.quartz.Job;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
 
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
@@ -62,7 +58,7 @@ public class StaticReport  {
 
             // ------------------  threads start! ----------------------
 
-            final Runnable worker = new WorkerThread(startFolderId);
+            final Runnable worker = new GetIdsThread(startFolderId);
             futures.add(executor.submit(worker));
             for (Future<?> feature : futures) {
                 while (!feature.isDone())

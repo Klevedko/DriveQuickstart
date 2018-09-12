@@ -7,16 +7,14 @@ import map.AuditMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import static Reports.StaticReport.*;
 
-class WorkerThread implements Runnable {
+class GetIdsThread implements Runnable {
     private String message;
 
-    public WorkerThread(String s) {
+    public GetIdsThread(String s) {
         this.message = s;
     }
 
@@ -34,7 +32,7 @@ class WorkerThread implements Runnable {
                     System.out.println("folder= " + f.getName());
                     Thread.sleep(350);
                     String newId = "'" + f.getId() + "'  in parents and trashed=false";
-                    Runnable worker = new WorkerThread(newId);
+                    Runnable worker = new GetIdsThread(newId);
                     executor.execute(worker);
                 } else {
                     System.out.println("  file= " + f.getName() + resultMap.size());
