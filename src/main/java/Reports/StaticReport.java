@@ -117,10 +117,12 @@ public class StaticReport {
                     System.out.println(f.getName());
                     querry_deeper = "'" + f.getId() + "'  in parents and trashed=false";
                     deeper_in_folders(get_driveservice_v3_files(querry_deeper).getFiles());
-                }
-                else
+                } else {
+                    System.out.println(f.getName());
+
                     fileIdMap.add(new FileIdMap(f.getId(), f.getName(), f.getWebViewLink(),
                             "", "", false));
+                }
             } catch (Exception ss) {
                 System.out.println("deeper_in_folders = " + f.getName() + ss);
             }
