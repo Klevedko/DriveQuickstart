@@ -2,6 +2,7 @@
   <library name="Gradle: com.google.api-client:google-api-client:1.23.0">
     <CLASSES>
       <root url="jar://C:/Gradle/gradle-4.9/caches/modules-2/files-2.1/com.google.api-client/google-api-client/1.23.0/522ea860eb48dee71dfe2c61a1fd09663539f556/google-api-client-1.23.0.jar!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.google.api-client/google-api-client/1.23.0/522ea860eb48dee71dfe2c61a1fd09663539f556/google-api-client-1.23.0.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>

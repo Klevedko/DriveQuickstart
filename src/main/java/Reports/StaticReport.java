@@ -24,7 +24,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.*;
 
-public class StaticReport implements Job {
+public class StaticReport  {
     public static ExecutorService executor = Executors.newFixedThreadPool(6);//creating a pool of 5 threads
 
     public static ArrayList<AuditMap> resultMap = new ArrayList<AuditMap>();
@@ -39,7 +39,7 @@ public class StaticReport implements Job {
     public static Drive driveservice;
     public static String ownersList;
     public static String realOwner;
-    public static List<Future<Object>> futures = new ArrayList<>();
+    public static List<Future<?>> futures = new ArrayList<>();
 
     static {
         try {
@@ -48,7 +48,7 @@ public class StaticReport implements Job {
         }
     }
 
-    public void execute(JobExecutionContext context) throws JobExecutionException {
+    public static void main(String[] a){
         // блок для CRON - не запускаем, пока не выполнился предыдущий шаг
         if (running) {
             return;
@@ -58,30 +58,33 @@ public class StaticReport implements Job {
         System.out.println("---------------- STATIC REPORT RUNS ---------------- ");
         try {
             System.out.println("start " + new Date());
-            String startFolderId = "'" + "0B3jemUSF0v3dSDNya3hZQy1BODQ" + "'  in parents and trashed=false";
+            String startFolderId = "'" + "1u7SzirO7ut4ZsTHi1Tbhzu4Q03Akq7fY" + "'  in parents and trashed=false";
 
             // ------------------  threads start! ----------------------
-            futures.add(executor.submit(new Callable<Object>() {
-                public Object call() throws Exception {
-                    return null;
-                }
-            }));
-            Runnable worker = new WorkerThread(startFolderId);
-                executor.execute(worker);//calling execute method of ExecutorService
-            while (executor.isTerminated()) {
-                System.out.println("Finished all threads");
+
+            final Runnable worker = new WorkerThread(startFolderId);
+            futures.add(executor.submit(worker));
+            for (Future<?> feature : futures) {
+                while (!feature.isDone())
+                    TimeUnit.SECONDS.sleep(1);
+                feature.get();
+            }
+
+            System.out.println("Finished all threads");
                 write_to_file(resultMap);
                 String WebViewLink = CreateGoogleFile.main(resultfile);
                 SendMail.main(resultfile, WebViewLink);
                 System.out.println("end " + new Date());
-            }
             // Первый step Cron пройден
             // running = false;
         } catch (Exception exec) {
             try {
+                System.out.println(exec);
                 SimpleEmail.generateAndSendEmail();
             } catch (Exception global) {
             }
+        }finally {
+            executor.shutdown();
         }
     }
 

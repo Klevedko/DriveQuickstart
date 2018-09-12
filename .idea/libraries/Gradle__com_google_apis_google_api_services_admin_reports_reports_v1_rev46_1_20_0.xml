@@ -2,6 +2,7 @@
   <library name="Gradle: com.google.apis:google-api-services-admin-reports:reports_v1-rev46-1.20.0">
     <CLASSES>
       <root url="jar://C:/Gradle/gradle-4.9/caches/modules-2/files-2.1/com.google.apis/google-api-services-admin-reports/reports_v1-rev46-1.20.0/72efd560a2010eb1ffd2964e8b36b67daaeeecb5/google-api-services-admin-reports-reports_v1-rev46-1.20.0.jar!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.google.apis/google-api-services-admin-reports/reports_v1-rev46-1.20.0/72efd560a2010eb1ffd2964e8b36b67daaeeecb5/google-api-services-admin-reports-reports_v1-rev46-1.20.0.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>
