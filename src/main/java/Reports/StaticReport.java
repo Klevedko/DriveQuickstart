@@ -58,7 +58,7 @@ public class StaticReport implements Job {
         System.out.println("---------------- STATIC REPORT RUNS ---------------- ");
         try {
             System.out.println("start " + new Date());
-            String startFolderId = "'" + "1tP-IDq3DksMYA1HPMuubADEllTxCQ04j" + "'  in parents and trashed=false";
+            String startFolderId = "'" + "0B3jemUSF0v3dSDNya3hZQy1BODQ" + "'  in parents and trashed=false";
 
             // ------------------  threads start! ----------------------
             futures.add(executor.submit(new Callable<Object>() {
