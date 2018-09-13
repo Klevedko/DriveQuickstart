@@ -7,6 +7,7 @@
     <JAVADOC />
     <SOURCES>
       <root url="jar://C:/Gradle/gradle-4.9/caches/modules-2/files-2.1/com.google.apis/google-api-services-appsactivity/v1-rev136-1.23.0/b389f11f2dda71e110cd8c21d7fd16cd5b9cfe43/google-api-services-appsactivity-v1-rev136-1.23.0-sources.jar!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.google.apis/google-api-services-appsactivity/v1-rev136-1.23.0/b389f11f2dda71e110cd8c21d7fd16cd5b9cfe43/google-api-services-appsactivity-v1-rev136-1.23.0-sources.jar!/" />
     </SOURCES>
   </library>
 </component>

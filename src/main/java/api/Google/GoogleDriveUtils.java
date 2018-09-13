@@ -24,7 +24,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 public class GoogleDriveUtils {
-    private static final java.io.File DATA_STORE_DIR = new java.io.File("token_Google");
+    private static final java.io.File DATA_STORE_DIR = new java.io.File("src/main/resources/token_Google");
 
     private static final String APPLICATION_NAME = "Google Drive API Java Quickstart";
 

@@ -25,7 +25,7 @@ import java.util.List;
 public class Apiv3 {
     private static final String APPLICATION_NAME = "Google Drive API Java Quickstart";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
-    private static final String TOKENS_DIRECTORY_PATH = "token_v3";
+    private static final String TOKENS_DIRECTORY_PATH = "src/main/resources/token_v3";
 
     /**
      * Global instance of the scopes required by this quickstart.

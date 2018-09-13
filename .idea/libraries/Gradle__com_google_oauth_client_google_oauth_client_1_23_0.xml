@@ -7,6 +7,7 @@
     <JAVADOC />
     <SOURCES>
       <root url="jar://C:/Gradle/gradle-4.9/caches/modules-2/files-2.1/com.google.oauth-client/google-oauth-client/1.23.0/9030ee2be9844eb8c87c851ecf4c05f79b02e023/google-oauth-client-1.23.0-sources.jar!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.google.oauth-client/google-oauth-client/1.23.0/9030ee2be9844eb8c87c851ecf4c05f79b02e023/google-oauth-client-1.23.0-sources.jar!/" />
     </SOURCES>
   </library>
 </component>

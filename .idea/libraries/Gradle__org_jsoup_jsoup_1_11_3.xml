@@ -7,6 +7,7 @@
     <JAVADOC />
     <SOURCES>
       <root url="jar://C:/Gradle/gradle-4.9/caches/modules-2/files-2.1/org.jsoup/jsoup/1.11.3/871302b15d8cee9bfb393c4f1d0386b17646d8d1/jsoup-1.11.3-sources.jar!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jsoup/jsoup/1.11.3/871302b15d8cee9bfb393c4f1d0386b17646d8d1/jsoup-1.11.3-sources.jar!/" />
     </SOURCES>
   </library>
 </component>

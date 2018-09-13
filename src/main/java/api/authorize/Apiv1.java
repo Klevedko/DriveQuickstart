@@ -27,7 +27,7 @@ public class Apiv1 {
     /**
      * Directory to store authorization tokens for this application.
      */
-    private static final java.io.File DATA_STORE_DIR = new java.io.File("token_v1");
+    private static final java.io.File DATA_STORE_DIR = new java.io.File("src/main/resources/token_v1");
 
     /**
      * Global instance of the {@link FileDataStoreFactory}.

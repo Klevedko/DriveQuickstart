@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-public class DynamicReport implements Job {
+public class DynamicReport {
 
     public static String history = "";
     public static String historyAdd = "";
@@ -53,7 +53,7 @@ public class DynamicReport implements Job {
         }
     }
 
-    public void execute(JobExecutionContext context) throws JobExecutionException {
+    public static void main(String[] a) throws JobExecutionException {
         System.out.println(dateFormat.format(new Date()));
         // блок для CRON - не запускаем, пока не выполнился предыдущий шаг
         if (running) {

@@ -7,6 +7,7 @@
     <JAVADOC />
     <SOURCES>
       <root url="jar://C:/Gradle/gradle-4.9/caches/modules-2/files-2.1/org.slf4j/slf4j-api/1.6.6/bcd0e21b1572960cefd449f8a16efab5b6b8e644/slf4j-api-1.6.6-sources.jar!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.slf4j/slf4j-api/1.6.6/bcd0e21b1572960cefd449f8a16efab5b6b8e644/slf4j-api-1.6.6-sources.jar!/" />
     </SOURCES>
   </library>
 </component>
