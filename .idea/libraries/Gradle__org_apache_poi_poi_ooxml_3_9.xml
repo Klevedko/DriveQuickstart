@@ -2,6 +2,7 @@
   <library name="Gradle: org.apache.poi:poi-ooxml:3.9">
     <CLASSES>
       <root url="jar://C:/Gradle/gradle-4.9/caches/modules-2/files-2.1/org.apache.poi/poi-ooxml/3.9/bbe83c739d22eecfacd06d7e0b99ba13277040ed/poi-ooxml-3.9.jar!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.apache.poi/poi-ooxml/3.9/bbe83c739d22eecfacd06d7e0b99ba13277040ed/poi-ooxml-3.9.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>

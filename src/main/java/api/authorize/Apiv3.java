@@ -42,7 +42,7 @@ public class Apiv3 {
      */
     private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
         // Load client secrets.
-        InputStream in = Apiv1v3.class.getResourceAsStream("/credentialss.json");
+        InputStream in = Apiv3.class.getResourceAsStream("/credentialss.json");
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 
         // Build flow and trigger user authorization request.

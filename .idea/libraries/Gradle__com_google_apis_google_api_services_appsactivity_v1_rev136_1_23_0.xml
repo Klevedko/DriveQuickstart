@@ -2,6 +2,7 @@
   <library name="Gradle: com.google.apis:google-api-services-appsactivity:v1-rev136-1.23.0">
     <CLASSES>
       <root url="jar://C:/Gradle/gradle-4.9/caches/modules-2/files-2.1/com.google.apis/google-api-services-appsactivity/v1-rev136-1.23.0/818ea6c5f032fa1135fcb7b961a6c0b65cfd9a4e/google-api-services-appsactivity-v1-rev136-1.23.0.jar!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.google.apis/google-api-services-appsactivity/v1-rev136-1.23.0/818ea6c5f032fa1135fcb7b961a6c0b65cfd9a4e/google-api-services-appsactivity-v1-rev136-1.23.0.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>

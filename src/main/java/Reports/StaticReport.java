@@ -55,8 +55,8 @@ public class StaticReport {
         running = true;
         try {
             System.out.println("start " + new Date());
-            String startFolderId = "0B3jemUSF0v3dVFN6Wk8taXdLcms";
-            //String startFolderId = "1tP-IDq3DksMYA1HPMuubADEllTxCQ04j";
+            //String startFolderId = "0B3jemUSF0v3dVFN6Wk8taXdLcms";
+            String startFolderId = "1tP-IDq3DksMYA1HPMuubADEllTxCQ04j";
             String query = "'" + startFolderId + "'  in parents and trashed=false";
             System.out.println("---------------- STATIC RUN ---------------- ");
             FileList fileList = get_driveservice_v3_files(query);
@@ -82,7 +82,7 @@ public class StaticReport {
             }
             write_to_file(fileIdMap);
             String WebViewLink = CreateGoogleFile.main(resultfile);
-            //SendMail.main(resultfile, WebViewLink);
+            SendMail.main(resultfile, WebViewLink);
             System.out.println("end " + new Date());
 
             // Первый step Cron пройден

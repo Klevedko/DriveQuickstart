@@ -1,5 +1,6 @@
 package api.Google;
 
+import api.authorize.Apiv3;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
@@ -23,6 +24,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 public class GoogleDriveUtils {
+    private static final java.io.File DATA_STORE_DIR = new java.io.File("token_Google");
 
     private static final String APPLICATION_NAME = "Google Drive API Java Quickstart";
 
@@ -30,9 +32,9 @@ public class GoogleDriveUtils {
 
     // Directory to store user credentials for this application.
     private static final java.io.File CREDENTIALS_FOLDER //
-            = new java.io.File(System.getProperty("user.dir"), "credentials");
+            = new java.io.File(System.getProperty("user.dir"), "src/main/resources/");
 
-    private static final String CLIENT_SECRET_FILE_NAME = "client_secret.json";
+    private static final String CLIENT_SECRET_FILE_NAME = "credentials.json";
 
     private static final List<String> SCOPES = Collections.singletonList(DriveScopes.DRIVE);
 
@@ -47,7 +49,7 @@ public class GoogleDriveUtils {
     static {
         try {
             HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-            DATA_STORE_FACTORY = new FileDataStoreFactory(CREDENTIALS_FOLDER);
+            DATA_STORE_FACTORY = new FileDataStoreFactory(DATA_STORE_DIR);
         } catch (Throwable t) {
             t.printStackTrace();
             System.exit(1);

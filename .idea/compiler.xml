@@ -5,6 +5,8 @@
       <module name="CronBuild" target="1.8" />
       <module name="CronBuild_main" target="1.7" />
       <module name="CronBuild_test" target="1.7" />
+      <module name="StaticReport_main" target="1.7" />
+      <module name="StaticReport_test" target="1.7" />
     </bytecodeTargetLevel>
   </component>
 </project>
