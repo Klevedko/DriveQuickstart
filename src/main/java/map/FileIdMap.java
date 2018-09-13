@@ -1,7 +1,10 @@
 package map;
 
-public class FileIdMap {
+import java.io.Serializable;
+
+public class FileIdMap implements Serializable, Comparable<FileIdMap> {
     private String id;
+    private String folderName;
     private String name;
     private String webViewLink;
     private String idreal_owner;
@@ -21,8 +24,9 @@ public class FileIdMap {
         this.idInovus = idInovus;
     }
 
-    public FileIdMap(String id, String name, String webViewLink) {
+    public FileIdMap(String id, String folderName, String name, String webViewLink) {
         this.id = id;
+        this.folderName = folderName;
         this.name = name;
         this.webViewLink = webViewLink;
     }
@@ -97,5 +101,36 @@ public class FileIdMap {
 
     public void setIdInovus(Boolean idInovus) {
         this.idInovus = idInovus;
+    }
+
+    public String getFolderName() {
+        return folderName;
+    }
+
+    public void setFolderName(String folderName) {
+        this.folderName = folderName;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        FileIdMap that = (FileIdMap) obj;
+        if (!(this.folderName.equals(that.folderName))
+                ) return false;
+        return true;
+    }
+    @Override
+    //this is required to print the user friendly information about the map.AuditMap
+    public String toString() {
+        return "[date=" + this.folderName + "]";
+    }
+
+    @Override
+    public int compareTo(FileIdMap o) {
+        int result = this.folderName.compareToIgnoreCase(o.folderName);
+        if (result != 0) {
+            return result;
+        } else {
+            return new String(this.folderName).compareTo(new String(o.folderName));
+        }
     }
 }

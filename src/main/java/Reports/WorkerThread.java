@@ -58,7 +58,7 @@ class WorkerThread implements Runnable {
                 fileIdMap.remove(elemet);
                 System.out.println("removed Object with ID = " + elemet.getId());
             }
-            //System.out.println("DONE thread WITH NAME= " + elemet.getName());
+            System.out.println("DONE thread WITH NAME= " + elemet.getName());
 
         }
     }

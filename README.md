@@ -1,9 +1,10 @@
 Статический отчет Googe Drive Files
 
-Приложение запускается из CronBuild , в определенный день сканирует папку 
-"String FileId = "<FOLDER ID>" в классе StaticReport и все подпапки.
-Считываются файлы, аккаунты и их права на каждый файл.
-Файл сохраняется на жесткий диск под именем "static_audit_result_01_01_2001.xls".
+Приложение запускается из CronBuild , в определенный день рекурсивно сканирует папку 
+"String startFolderId = "<FOLDER ID>" в классе StaticReport и все подпапки, составляет лист из ID файлов,
+периодически формируя потоки по каждому ID, который получает списки владельцев REST-ом. 
+
+Файл сохраняется на жесткий диск под именем "Ыtatic_audit_result_01_01_2001.xls".
 Файл загружается классом CreateGoogleFile на Google Drive в папку
 File googleFile = createGoogleFile(<FOLDER ID>).
 
@@ -12,8 +13,6 @@ File googleFile = createGoogleFile(<FOLDER ID>).
 
 ---------------------------------------------------------------------------------------
 Описание классов:
-0. Класс по очереди использует Apiv1 Apiv3 для POST запросов для СТАТИЧЕСКОГО отчета.
-   ( получение данных, логика, запись в файл, загрузка файла на Google Drive, отправка Email).
 1. CronBuild:
     Quartz, в нем задается класс для запуска и настройка триггера.
 2. Apiv1
@@ -26,10 +25,11 @@ File googleFile = createGoogleFile(<FOLDER ID>).
     Класс по очереди использует Apiv1 Apiv3 для POST запросов для ДИНАМИЧЕСКОГО отчета.
         ( получение данных и их анализ, всю логику, запись в файл, отправка Email).
         В данной задаче не используется.
-4. SendMail
-    Класс для настройки и отправки Email ( ч\з Google SMTP).
+4. SendMail и SimpleEmail
+    Классы для настройки и отправки Email ( ч\з Google SMTP)  в случае успеха\ошибки.
 5. AuditMap
     Класс для хранения считываемых данных с переопределенным методом isEquals().
+        В данной задаче не используется.
 6. TestCheckSum 
     Проверка HASH выходного файла. Не используется.
 6. CreateGoogleFile
@@ -44,6 +44,7 @@ File googleFile = createGoogleFile(<FOLDER ID>).
 1. https://console.developers.google.com
     Создать проект и сгенерить в учетных данных oApp ключ.
     Скачать json . Положить его в resources/credentials.json.
+    Положить его в resources/credentials.json.
 Повторить шаг, но положить новый файл уже в resources/credentialss.json
 
 ( При чистой установке, при первом запуске jar дважды откроется 

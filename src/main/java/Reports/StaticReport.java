@@ -19,6 +19,7 @@ import org.quartz.JobExecutionException;
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.*;
@@ -60,7 +61,8 @@ public class StaticReport {
             System.out.println("---------------- STATIC RUN ---------------- ");
             FileList fileList = get_driveservice_v3_files(query);
             List<File> listFile = fileList.getFiles();
-            deeper_in_folders(listFile);
+            deeper_in_folders("", listFile);
+            Collections.sort(fileIdMap);
             System.out.println("end recursion " + new Date());
             System.out.println(fileIdMap.size());
           /*  System.out.println("------show me fileidmap");
@@ -80,7 +82,7 @@ public class StaticReport {
             }
             write_to_file(fileIdMap);
             String WebViewLink = CreateGoogleFile.main(resultfile);
-            SendMail.main(resultfile, WebViewLink);
+            //SendMail.main(resultfile, WebViewLink);
             System.out.println("end " + new Date());
 
             // Первый step Cron пройден
@@ -98,7 +100,7 @@ public class StaticReport {
     public static FileList get_driveservice_v3_files(String query) {
         try {
             return driveservice.files().list().setQ(query).setFields("nextPageToken, " +
-                    "files(id, name, webViewLink, mimeType)").execute();
+                    "files(id, parents, name, webViewLink, mimeType)").execute();
             //, sharingUser(emailAddress, permissionId)
         } catch (Exception x) {
             System.out.println("get_driveservice_v3_files = " + x);
@@ -106,7 +108,7 @@ public class StaticReport {
         return fileList;
     }
 
-    public static void deeper_in_folders(List<File> file) {
+    public static void deeper_in_folders(String FolderName, List<File> file) {
         for (File f : file) {
             try {
                 // Исключаем
@@ -119,11 +121,16 @@ public class StaticReport {
 
                     if (f.getMimeType().equals("application/vnd.google-apps.folder") || f.getMimeType().equals("folder")) {
                         //System.out.println(f.getName());
+                        List<String> s = f.getParents();
+                        /*for (String ss : s) {
+                            System.out.println(ss);
+                            System.out.println();
+                        }*/
                         querry_deeper = "'" + f.getId() + "'  in parents and trashed=false";
-                        deeper_in_folders(get_driveservice_v3_files(querry_deeper).getFiles());
+                        deeper_in_folders(FolderName.concat("/".concat(f.getName())), get_driveservice_v3_files(querry_deeper).getFiles());
                     } else {
                         //System.out.println(f.getName());
-                        fileIdMap.add(new FileIdMap(f.getId(), f.getName(), f.getWebViewLink()));
+                        fileIdMap.add(new FileIdMap(f.getId(), FolderName, f.getName(), f.getWebViewLink()));
                         Runnable worker = new WorkerThread(fileIdMap.get(fileIdMap.size() - 1));
                         Thread.sleep(150);
                         futures.add(executor.submit(worker));
@@ -167,6 +174,8 @@ public class StaticReport {
                     isbad = true;
                 }
                 cell = dataRow.createCell(0);
+                cell.setCellValue(product.getFolderName());
+                cell = dataRow.createCell(1);
                 CreationHelper createHelper = wb.getCreationHelper();
                 Hyperlink link = createHelper.createHyperlink(Hyperlink.LINK_FILE);
                 CellStyle hlink_style = wb.createCellStyle();
@@ -174,17 +183,18 @@ public class StaticReport {
                 cell.setHyperlink(link);
                 cell.setCellStyle(hlink_style);
                 cell.setCellValue(product.getName());
-                cell = dataRow.createCell(1);
-                cell.setCellValue(product.getIdreal_owner());
+
                 cell = dataRow.createCell(2);
-                cell.setCellValue(product.getWebViewLink());
+                cell.setCellValue(product.getIdreal_owner());
                 cell = dataRow.createCell(3);
-                cell.setCellValue(product.getIdowners());
+                cell.setCellValue(product.getWebViewLink());
                 cell = dataRow.createCell(4);
-                cell.setCellValue(product.getGoodOwnersList());
+                cell.setCellValue(product.getIdowners());
                 cell = dataRow.createCell(5);
-                cell.setCellValue(product.getBadOwnersList());
+                cell.setCellValue(product.getGoodOwnersList());
                 cell = dataRow.createCell(6);
+                cell.setCellValue(product.getBadOwnersList());
+                cell = dataRow.createCell(7);
                 cell.setCellValue(product.getIdInovus().toString());
                 if (isbad) badRow++;
                 else
@@ -204,19 +214,21 @@ public class StaticReport {
             Cell cell;
             Row dataRow = x.createRow(row);
             cell = dataRow.createCell(0);
-            cell.setCellValue("File");
+            cell.setCellValue("Папка");
             cell = dataRow.createCell(1);
-            cell.setCellValue("realOwner");
+            cell.setCellValue("Файл");
             cell = dataRow.createCell(2);
-            cell.setCellValue("WebViewLink");
+            cell.setCellValue("Владелец");
             cell = dataRow.createCell(3);
-            cell.setCellValue("owners");
+            cell.setCellValue("Ссылка");
             cell = dataRow.createCell(4);
-            cell.setCellValue("Good owners");
+            cell.setCellValue("Общий список прав");
             cell = dataRow.createCell(5);
-            cell.setCellValue("Bad owners");
+            cell.setCellValue("Доступ сотрудников АН");
             cell = dataRow.createCell(6);
-            cell.setCellValue("all from i-novus");
+            cell.setCellValue("Доступ сторонних сотрудников");
+            cell = dataRow.createCell(7);
+            cell.setCellValue("Файл виден только сотрудникам АН");
 
         } catch (Exception create_columns) {
             System.out.println("create_columns" + create_columns);
