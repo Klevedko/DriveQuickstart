@@ -45,6 +45,7 @@ class WorkerThread implements Runnable {
                     }
                 }
                 //if (!allEmailFromINovus) {
+                //System.out.println("name- " + elemet.getId());System.out.println("realOwner= "+ realOwner);
                     elemet.setIdreal_owner(realOwner);
                     elemet.setIdowners(ownersList);
                     elemet.setGoodOwnersList(goodOwnersList);
@@ -53,9 +54,11 @@ class WorkerThread implements Runnable {
                 //} else
                   //  fileIdMap.remove(elemet);
             } catch (Exception e) {
-                System.out.println("getOwners = " + e.getMessage() + e.getLocalizedMessage());
+                System.out.println("REST ERROR = " + e.getMessage());
+                fileIdMap.remove(elemet);
+                System.out.println("removed Object with ID = " + elemet.getId());
             }
-            System.out.println("DONE thread WITH NAME= " + elemet.getName());
+            //System.out.println("DONE thread WITH NAME= " + elemet.getName());
 
         }
     }

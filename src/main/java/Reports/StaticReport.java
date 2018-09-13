@@ -54,7 +54,7 @@ public class StaticReport {
         running = true;
         try {
             System.out.println("start " + new Date());
-            String startFolderId = "1KQqgo-qELtFFK6hH_bHpzfaFbZg4WnFk";
+            String startFolderId = "0B3jemUSF0v3dVFN6Wk8taXdLcms";
             //String startFolderId = "1tP-IDq3DksMYA1HPMuubADEllTxCQ04j";
             String query = "'" + startFolderId + "'  in parents and trashed=false";
             System.out.println("---------------- STATIC RUN ---------------- ");
@@ -125,7 +125,7 @@ public class StaticReport {
                         //System.out.println(f.getName());
                         fileIdMap.add(new FileIdMap(f.getId(), f.getName(), f.getWebViewLink()));
                         Runnable worker = new WorkerThread(fileIdMap.get(fileIdMap.size() - 1));
-                        Thread.sleep(160);
+                        Thread.sleep(150);
                         futures.add(executor.submit(worker));
                     }
                 }

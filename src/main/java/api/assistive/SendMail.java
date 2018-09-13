@@ -14,7 +14,7 @@ public class SendMail {
         String host = "smtp.gmail.com";
         String Password = "q21xkr927";
         String from = "akrasilnikov@i-novus.ru";
-        String toAddress = "akrasilnikov@i-novus.ru";
+        String toAddress = "akorolev@i-novus.ru";
         //String filename = filetoload;
         // Get system properties
         Properties props = System.getProperties();
