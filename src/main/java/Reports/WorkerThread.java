@@ -3,6 +3,7 @@ package Reports;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 import com.google.api.services.drive.model.PermissionList;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import map.FileIdMap;
 
 import java.util.List;
@@ -18,11 +19,13 @@ class WorkerThread implements Runnable {
 
     public void run() {
         {
-            System.out.println("starting new thread WITH NAME= " + elemet.getName());
-            ownersList = "";
-            allEmailFromINovus = true;
+            //System.out.println("starting new thread WITH NAME= " + elemet.getName());
+            String ownersList = "";
+            String goodOwnersList = "";
+            String badOwnersList = "";
+            Boolean allEmailFromINovus = true;
+            String realOwner = "";
             try {
-                Thread.sleep(400);
                 PermissionList permissionList = driveservice.permissions().list(elemet.getId()).setFields("permissions(displayName, emailAddress, role)")
                         .execute();
                 List<com.google.api.services.drive.model.Permission> p = permissionList.getPermissions();
@@ -30,19 +33,25 @@ class WorkerThread implements Runnable {
                     ownersList += pe.getDisplayName() + " ( " + pe.getEmailAddress() + " ) : " + pe.getRole() + "\n";
                     if (pe.getEmailAddress() != null) {
                         if (!(pe.getEmailAddress().toLowerCase().contains("@i-novus"))) {
+                            badOwnersList += pe.getEmailAddress().toString()+ "\n";
                             allEmailFromINovus = false;
+                        }
+                        else{
+                            goodOwnersList+=pe.getEmailAddress().toString()+ "\n";
                         }
                         if ((pe.getRole().equals("owner"))) {
                             realOwner = pe.getDisplayName() + " ( " + pe.getEmailAddress() + " )";
                         }
                     }
                 }
-                if (!allEmailFromINovus) {
+                //if (!allEmailFromINovus) {
                     elemet.setIdreal_owner(realOwner);
                     elemet.setIdowners(ownersList);
+                    elemet.setGoodOwnersList(goodOwnersList);
+                    elemet.setBadOwnersList(badOwnersList);
                     elemet.setIdInovus(allEmailFromINovus);
-                } else
-                    fileIdMap.remove(elemet);
+                //} else
+                  //  fileIdMap.remove(elemet);
             } catch (Exception e) {
                 System.out.println("getOwners = " + e.getMessage() + e.getLocalizedMessage());
             }

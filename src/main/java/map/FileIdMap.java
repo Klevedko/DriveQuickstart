@@ -6,14 +6,18 @@ public class FileIdMap {
     private String webViewLink;
     private String idreal_owner;
     private String idowners;
+    private String goodOwnersList;
+    private String badOwnersList;
     private boolean idInovus;
 
-    public FileIdMap(String id, String name, String webViewLink, String idreal_owner, String idowners, Boolean idInovus) {
+    public FileIdMap(String id, String name, String webViewLink, String idreal_owner, String idowners, String goodOwnersList, String badOwnersList, Boolean idInovus) {
         this.id = id;
         this.name = name;
         this.webViewLink = webViewLink;
         this.idreal_owner = idreal_owner;
         this.idowners = idowners;
+        this.goodOwnersList = goodOwnersList;
+        this.badOwnersList = badOwnersList;
         this.idInovus = idInovus;
     }
 
@@ -22,6 +26,7 @@ public class FileIdMap {
         this.name = name;
         this.webViewLink = webViewLink;
     }
+
     public String getId() {
         return id;
     }
@@ -60,6 +65,30 @@ public class FileIdMap {
 
     public void setIdowners(String idowners) {
         this.idowners = idowners;
+    }
+
+    public String getGoodOwnersList() {
+        return goodOwnersList;
+    }
+
+    public void setGoodOwnersList(String goodOwnersList) {
+        this.goodOwnersList = goodOwnersList;
+    }
+
+    public String getBadOwnersList() {
+        return badOwnersList;
+    }
+
+    public void setBadOwnersList(String badOwnersList) {
+        this.badOwnersList = badOwnersList;
+    }
+
+    public boolean isIdInovus() {
+        return idInovus;
+    }
+
+    public void setIdInovus(boolean idInovus) {
+        this.idInovus = idInovus;
     }
 
     public Boolean getIdInovus() {
