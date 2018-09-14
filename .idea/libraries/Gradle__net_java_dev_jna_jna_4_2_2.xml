@@ -6,7 +6,6 @@
     </CLASSES>
     <JAVADOC />
     <SOURCES>
-      <root url="jar://C:/Gradle/gradle-4.9/caches/modules-2/files-2.1/net.java.dev.jna/jna/4.2.2/948a9338b46e83bc029a0c500f1de0fc6eea8900/jna-4.2.2-sources.jar!/" />
       <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/4.2.2/948a9338b46e83bc029a0c500f1de0fc6eea8900/jna-4.2.2-sources.jar!/" />
     </SOURCES>
   </library>

@@ -6,7 +6,6 @@
     </CLASSES>
     <JAVADOC />
     <SOURCES>
-      <root url="jar://C:/Gradle/gradle-4.9/caches/modules-2/files-2.1/com.google.apis/google-api-services-admin-reports/reports_v1-rev46-1.20.0/6e16c6c3250d02da76e7aadfd2cd843d0293a5ff/google-api-services-admin-reports-reports_v1-rev46-1.20.0-sources.jar!/" />
       <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.google.apis/google-api-services-admin-reports/reports_v1-rev46-1.20.0/6e16c6c3250d02da76e7aadfd2cd843d0293a5ff/google-api-services-admin-reports-reports_v1-rev46-1.20.0-sources.jar!/" />
     </SOURCES>
   </library>
