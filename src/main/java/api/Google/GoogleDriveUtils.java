@@ -1,5 +1,6 @@
 package api.Google;
 
+import Reports.DynamicReport;
 import api.authorize.Apiv3;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
@@ -24,7 +25,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 public class GoogleDriveUtils {
-    private static final java.io.File DATA_STORE_DIR = new java.io.File("src/main/resources/token_Google");
+    private static final String DATA_STORE_DIR = System.getProperty("user.dir") + "/token_Google";
 
     private static final String APPLICATION_NAME = "Google Drive API Java Quickstart";
 
@@ -32,9 +33,7 @@ public class GoogleDriveUtils {
 
     // Directory to store user credentials for this application.
     private static final java.io.File CREDENTIALS_FOLDER //
-            = new java.io.File(System.getProperty("user.dir"), "src/main/resources/");
-
-    private static final String CLIENT_SECRET_FILE_NAME = "credentials.json";
+            = new java.io.File(System.getProperty("user.dir"), "/token_Google");
 
     private static final List<String> SCOPES = Collections.singletonList(DriveScopes.DRIVE);
 
@@ -49,7 +48,7 @@ public class GoogleDriveUtils {
     static {
         try {
             HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-            DATA_STORE_FACTORY = new FileDataStoreFactory(DATA_STORE_DIR);
+            DATA_STORE_FACTORY = new FileDataStoreFactory(new java.io.File(DATA_STORE_DIR));
         } catch (Throwable t) {
             t.printStackTrace();
             System.exit(1);
@@ -58,16 +57,11 @@ public class GoogleDriveUtils {
 
     public static Credential getCredentials() throws IOException {
 
-        java.io.File clientSecretFilePath = new java.io.File(CREDENTIALS_FOLDER, CLIENT_SECRET_FILE_NAME);
-
-        if (!clientSecretFilePath.exists()) {
-            throw new FileNotFoundException("Please copy " + CLIENT_SECRET_FILE_NAME //
-                    + " to folder: " + CREDENTIALS_FOLDER.getAbsolutePath());
-        }
-
-        InputStream in = new FileInputStream(clientSecretFilePath);
-
-        GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
+        // Load client secrets.
+        InputStream in =
+                DynamicReport.class.getResourceAsStream("/credentials.json");
+        GoogleClientSecrets clientSecrets =
+                GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 
         // Build flow and trigger user authorization request.
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(HTTP_TRANSPORT, JSON_FACTORY,

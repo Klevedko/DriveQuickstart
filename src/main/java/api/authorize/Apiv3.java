@@ -23,7 +23,7 @@ import java.util.List;
 public class Apiv3 {
     private static final String APPLICATION_NAME = "Google Drive API Java Quickstart";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
-    private static final String TOKENS_DIRECTORY_PATH = "src/main/resources/token_v3";
+    private static final String TOKENS_DIRECTORY_PATH = System.getProperty("user.dir") + "/token_v3";
 
     /**
      * Global instance of the scopes required by this quickstart.
@@ -42,7 +42,7 @@ public class Apiv3 {
         // Load client secrets.
         InputStream in = Apiv3.class.getResourceAsStream("/credentialss.json");
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
-
+        System.out.println(TOKENS_DIRECTORY_PATH);
         // Build flow and trigger user authorization request.
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
                 HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)

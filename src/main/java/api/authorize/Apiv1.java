@@ -27,7 +27,7 @@ public class Apiv1 {
     /**
      * Directory to store authorization tokens for this application.
      */
-    private static final java.io.File DATA_STORE_DIR = new java.io.File("src/main/resources/token_v1");
+    private static final String DATA_STORE_DIR = System.getProperty("user.dir") + "/token_v1";
 
     /**
      * Global instance of the {@link FileDataStoreFactory}.
@@ -56,7 +56,7 @@ public class Apiv1 {
     static {
         try {
             HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-            DATA_STORE_FACTORY = new FileDataStoreFactory(DATA_STORE_DIR);
+            DATA_STORE_FACTORY = new FileDataStoreFactory(new java.io.File(DATA_STORE_DIR));
         } catch (Throwable t) {
             //t.printStackTrace();
             System.exit(1);
@@ -86,7 +86,7 @@ public class Apiv1 {
         Credential credential = new AuthorizationCodeInstalledApp(
                 flow, new LocalServerReceiver()).authorize("akrasilnikov@i-novus.ru");
         System.out.println(
-                "Credentials saved to " + DATA_STORE_DIR.getAbsolutePath());
+                "Credentials saved to " + DATA_STORE_DIR);
         return credential;
     }
 
